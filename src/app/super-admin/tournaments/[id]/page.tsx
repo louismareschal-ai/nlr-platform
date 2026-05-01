@@ -29,10 +29,12 @@ export default async function TournamentDetailPage({
       .order("seed"),
     supabase.from("courts").select("*").eq("tournament_id", id).order("number"),
     supabase.from("rounds").select("*").eq("tournament_id", id).order("round_number"),
+    // All players not yet in any squad (global pool — squad_id IS NULL)
     supabase
-      .from("player_tournament_points")
-      .select("players!inner(id, first_name, last_name, gender, photo_url, squad_id)")
-      .eq("tournament_id", id),
+      .from("players")
+      .select("id, first_name, last_name, gender, photo_url, squad_id")
+      .is("squad_id", null)
+      .eq("role", "player"),
   ]);
 
   if (!tournament) notFound();
@@ -47,23 +49,15 @@ export default async function TournamentDetailPage({
     last_name: string;
     gender: string;
     photo_url: string | null;
-    squad_id?: string | null;
   };
 
-  const assignedIds = new Set(
-    squadList.flatMap((s) => (s.players as { id: string }[]).map((p) => p.id))
-  );
-
-  const unassignedPlayers = (tournamentPlayers ?? [])
-    .map((tp) => tp.players as unknown as PartialPlayer)
-    .filter((p) => p && !assignedIds.has(p.id))
-    .sort((a, b) => {
-      if (a.gender !== b.gender) return a.gender === "man" ? -1 : 1;
-      return a.last_name.localeCompare(b.last_name);
-    });
+  const unassignedPlayers = ((tournamentPlayers ?? []) as PartialPlayer[]).sort((a, b) => {
+    if (a.gender !== b.gender) return a.gender === "man" ? -1 : 1;
+    return a.last_name.localeCompare(b.last_name);
+  });
 
   const totalPlayers = squadList.reduce(
-    (sum, s) => sum + ((s.players as { id: string }[])?.length ?? 0),
+    (sum, s) => sum + ((s.players as PartialPlayer[])?.length ?? 0),
     0
   );
 
