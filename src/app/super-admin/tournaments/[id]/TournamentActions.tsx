@@ -69,6 +69,8 @@ export function TournamentActions({
     if (roundCount === 0) blockers.push("Generate the round schedule before going live.");
   }
 
+  const prevStatus = STATUS_FLOW[currentIdx - 1] as Status | undefined;
+
   async function advance() {
     if (!nextStatus || blockers.length > 0) return;
     const confirmed = window.confirm(ADVANCE_CONFIRMATIONS[currentStatus]);
@@ -79,6 +81,22 @@ export function TournamentActions({
     await supabase
       .from("tournaments")
       .update({ status: nextStatus })
+      .eq("id", tournament.id);
+    router.refresh();
+    setLoading(false);
+  }
+
+  async function revert() {
+    if (!prevStatus) return;
+    const confirmed = window.confirm(
+      `Go back to "${STATUS_LABELS[prevStatus]}"? This will undo the current status. Continue?`
+    );
+    if (!confirmed) return;
+    setLoading(true);
+    const supabase = createClient();
+    await supabase
+      .from("tournaments")
+      .update({ status: prevStatus })
       .eq("id", tournament.id);
     router.refresh();
     setLoading(false);
@@ -136,16 +154,27 @@ export function TournamentActions({
         </div>
       )}
 
-      {nextStatus && currentStatus !== "completed" && (
-        <Button
-          onClick={advance}
-          loading={loading}
-          disabled={blockers.length > 0}
-          variant={blockers.length > 0 ? "secondary" : "primary"}
-        >
-          Move to: {STATUS_LABELS[nextStatus]}
-        </Button>
-      )}
+      <div className="flex items-center gap-4 flex-wrap">
+        {nextStatus && currentStatus !== "completed" && (
+          <Button
+            onClick={advance}
+            loading={loading}
+            disabled={blockers.length > 0}
+            variant={blockers.length > 0 ? "secondary" : "primary"}
+          >
+            Move to: {STATUS_LABELS[nextStatus]}
+          </Button>
+        )}
+        {prevStatus && (
+          <button
+            onClick={revert}
+            disabled={loading}
+            className="text-xs text-[#6b6b7a] hover:text-[#f0ece3] transition-colors disabled:opacity-50"
+          >
+            ← Back to {STATUS_LABELS[prevStatus]}
+          </button>
+        )}
+      </div>
     </Card>
   );
 }

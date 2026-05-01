@@ -24,14 +24,14 @@ export default async function TournamentDetailPage({
     supabase.from("tournaments").select("*").eq("id", id).single(),
     supabase
       .from("squads")
-      .select("id, name, seed, players(id, first_name, last_name, gender)")
+      .select("id, name, seed, players(id, first_name, last_name, gender, photo_url)")
       .eq("tournament_id", id)
       .order("seed"),
     supabase.from("courts").select("*").eq("tournament_id", id).order("number"),
     supabase.from("rounds").select("*").eq("tournament_id", id).order("round_number"),
     supabase
       .from("player_tournament_points")
-      .select("players!inner(id, first_name, last_name, gender, squad_id)")
+      .select("players!inner(id, first_name, last_name, gender, photo_url, squad_id)")
       .eq("tournament_id", id),
   ]);
 
@@ -41,14 +41,21 @@ export default async function TournamentDetailPage({
   const courtList = courts ?? [];
   const roundList = rounds ?? [];
 
-  // Players registered for this tournament who aren't in any squad yet
+  type PartialPlayer = {
+    id: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+    photo_url: string | null;
+    squad_id?: string | null;
+  };
+
   const assignedIds = new Set(
-    squadList.flatMap((s) =>
-      (s.players as { id: string }[]).map((p) => p.id)
-    )
+    squadList.flatMap((s) => (s.players as { id: string }[]).map((p) => p.id))
   );
+
   const unassignedPlayers = (tournamentPlayers ?? [])
-    .map((tp) => tp.players as unknown as { id: string; first_name: string; last_name: string; gender: string; squad_id: string | null })
+    .map((tp) => tp.players as unknown as PartialPlayer)
     .filter((p) => p && !assignedIds.has(p.id))
     .sort((a, b) => {
       if (a.gender !== b.gender) return a.gender === "man" ? -1 : 1;
@@ -56,42 +63,40 @@ export default async function TournamentDetailPage({
     });
 
   const totalPlayers = squadList.reduce(
-    (sum, s) => sum + ((s.players as { id: string; gender: string }[])?.length ?? 0),
+    (sum, s) => sum + ((s.players as { id: string }[])?.length ?? 0),
     0
   );
 
-  // Show courts/schedule only once there are squads with players
   const hasPlayers = totalPlayers > 0;
+  const hasCourts = courtList.length > 0;
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href="/super-admin/tournaments"
-            className="text-xs text-[#6b6b7a] hover:text-[#f0ece3] transition-colors"
-          >
-            ← Tournaments
-          </Link>
-          <h1
-            className="text-2xl font-bold mt-2"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {tournament.name}
-          </h1>
-          <p className="text-sm text-[#6b6b7a] mt-0.5">
-            {new Date(tournament.date).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            {tournament.location ? ` · ${tournament.location}` : ""}
-          </p>
-        </div>
+      <div>
+        <Link
+          href="/super-admin/tournaments"
+          className="text-xs text-[#6b6b7a] hover:text-[#f0ece3] transition-colors"
+        >
+          ← Tournaments
+        </Link>
+        <h1
+          className="text-2xl font-bold mt-2"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {tournament.name}
+        </h1>
+        <p className="text-sm text-[#6b6b7a] mt-0.5">
+          {new Date(tournament.date).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+          {tournament.location ? ` · ${tournament.location}` : ""}
+        </p>
       </div>
 
-      {/* Status flow */}
+      {/* Status */}
       <TournamentActions
         tournament={tournament}
         squadCount={squadList.length}
@@ -102,94 +107,59 @@ export default async function TournamentDetailPage({
 
       {/* Step 1: Squads */}
       <section>
-        <div className="mb-3">
-          <h2 className="text-lg font-semibold">Step 1 — Squads</h2>
-          <p className="text-sm text-[#6b6b7a] mt-0.5">
-            Add all 8 squads and assign seeds 1–8. Players are added per squad by each squad's admin.
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold mb-1">Step 1 — Squads</h2>
+        <p className="text-sm text-[#6b6b7a] mb-4">
+          Create the 8 squads, assign seeds, then fill each squad with 4 men and 2 women.
+        </p>
         <SquadManager
           tournamentId={id}
           squads={squadList.map((s) => ({
             ...s,
-            players: (s.players as { id: string; first_name: string; last_name: string; gender: string }[]) ?? [],
+            players: (s.players as PartialPlayer[]) ?? [],
           }))}
           unassignedPlayers={unassignedPlayers}
         />
       </section>
 
-      {/* Step 2: Courts — only visible once squads exist */}
-      <section>
-        <div className="mb-3">
-          <h2 className="text-lg font-semibold">Step 2 — Courts</h2>
-          {!hasPlayers && squadList.length === 0 && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Add squads first, then set up courts.
-            </p>
-          )}
-          {squadList.length > 0 && !hasPlayers && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Players need to be added to squads before courts can be set up. Share squad admin
-              accounts with each team captain.
-            </p>
-          )}
-          {hasPlayers && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Generate courts for the tournament. Court names can be customised after.
-            </p>
-          )}
-        </div>
-        {hasPlayers ? (
+      {/* Step 2: Courts */}
+      {hasPlayers ? (
+        <section>
+          <h2 className="text-lg font-semibold mb-1">Step 2 — Courts</h2>
+          <p className="text-sm text-[#6b6b7a] mb-4">
+            Generate courts for the tournament. You can rename them after.
+          </p>
           <CourtManager
             tournamentId={id}
             courts={courtList}
             defaultCount={tournament.courts_count}
           />
-        ) : (
-          <div className="rounded-xl border border-[#1a1a24] bg-[#0d0d12] p-4">
-            <p className="text-sm text-[#6b6b7a]">
-              Waiting for players to be added to squads.
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* Step 3: Schedule — only visible once courts exist */}
-      <section>
-        <div className="mb-3">
-          <h2 className="text-lg font-semibold">Step 3 — Schedule</h2>
-          {!hasPlayers && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Add squads and players first.
-            </p>
-          )}
-          {hasPlayers && courtList.length === 0 && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Generate courts first, then set the round schedule.
-            </p>
-          )}
-          {hasPlayers && courtList.length > 0 && (
-            <p className="text-sm text-[#6b6b7a] mt-0.5">
-              Generate rounds and set their start times. You can adjust times later.
-            </p>
-          )}
+        </section>
+      ) : (
+        <div className="flex items-center gap-3 text-sm text-[#3a3a4a]">
+          <span className="w-5 h-5 rounded-full border border-[#1a1a24] flex items-center justify-center text-xs shrink-0">2</span>
+          <span>Courts — fill squads first</span>
         </div>
-        {hasPlayers && courtList.length > 0 ? (
+      )}
+
+      {/* Step 3: Schedule */}
+      {hasPlayers && hasCourts ? (
+        <section>
+          <h2 className="text-lg font-semibold mb-1">Step 3 — Schedule</h2>
+          <p className="text-sm text-[#6b6b7a] mb-4">
+            Generate rounds and set start times. You can adjust times later.
+          </p>
           <ScheduleManager
             tournamentId={id}
             rounds={roundList}
             squadCount={squadList.length}
           />
-        ) : (
-          <div className="rounded-xl border border-[#1a1a24] bg-[#0d0d12] p-4">
-            <p className="text-sm text-[#6b6b7a]">
-              {!hasPlayers
-                ? "Waiting for players to be added."
-                : "Generate courts first."}
-            </p>
-          </div>
-        )}
-      </section>
+        </section>
+      ) : (
+        <div className="flex items-center gap-3 text-sm text-[#3a3a4a]">
+          <span className="w-5 h-5 rounded-full border border-[#1a1a24] flex items-center justify-center text-xs shrink-0">3</span>
+          <span>Schedule — {!hasPlayers ? "fill squads first" : "generate courts first"}</span>
+        </div>
+      )}
     </div>
   );
 }
