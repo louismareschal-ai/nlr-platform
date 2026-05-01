@@ -10,10 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 
 interface Player {
   id: string;
-  first_name: string;
-  last_name: string;
   gender: string;
-  role: string;
 }
 
 interface Squad {
