@@ -14,23 +14,46 @@ export default async function TournamentDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: tournament }, { data: squads }, { data: courts }, { data: rounds }] =
-    await Promise.all([
-      supabase.from("tournaments").select("*").eq("id", id).single(),
-      supabase
-        .from("squads")
-        .select("id, name, seed, players(id, gender)")
-        .eq("tournament_id", id)
-        .order("seed"),
-      supabase.from("courts").select("*").eq("tournament_id", id).order("number"),
-      supabase.from("rounds").select("*").eq("tournament_id", id).order("round_number"),
-    ]);
+  const [
+    { data: tournament },
+    { data: squads },
+    { data: courts },
+    { data: rounds },
+    { data: tournamentPlayers },
+  ] = await Promise.all([
+    supabase.from("tournaments").select("*").eq("id", id).single(),
+    supabase
+      .from("squads")
+      .select("id, name, seed, players(id, first_name, last_name, gender)")
+      .eq("tournament_id", id)
+      .order("seed"),
+    supabase.from("courts").select("*").eq("tournament_id", id).order("number"),
+    supabase.from("rounds").select("*").eq("tournament_id", id).order("round_number"),
+    supabase
+      .from("player_tournament_points")
+      .select("players!inner(id, first_name, last_name, gender, squad_id)")
+      .eq("tournament_id", id),
+  ]);
 
   if (!tournament) notFound();
 
   const squadList = squads ?? [];
   const courtList = courts ?? [];
   const roundList = rounds ?? [];
+
+  // Players registered for this tournament who aren't in any squad yet
+  const assignedIds = new Set(
+    squadList.flatMap((s) =>
+      (s.players as { id: string }[]).map((p) => p.id)
+    )
+  );
+  const unassignedPlayers = (tournamentPlayers ?? [])
+    .map((tp) => tp.players as unknown as { id: string; first_name: string; last_name: string; gender: string; squad_id: string | null })
+    .filter((p) => p && !assignedIds.has(p.id))
+    .sort((a, b) => {
+      if (a.gender !== b.gender) return a.gender === "man" ? -1 : 1;
+      return a.last_name.localeCompare(b.last_name);
+    });
 
   const totalPlayers = squadList.reduce(
     (sum, s) => sum + ((s.players as { id: string; gender: string }[])?.length ?? 0),
@@ -89,8 +112,9 @@ export default async function TournamentDetailPage({
           tournamentId={id}
           squads={squadList.map((s) => ({
             ...s,
-            players: (s.players as { id: string; gender: string }[]) ?? [],
+            players: (s.players as { id: string; first_name: string; last_name: string; gender: string }[]) ?? [],
           }))}
+          unassignedPlayers={unassignedPlayers}
         />
       </section>
 
