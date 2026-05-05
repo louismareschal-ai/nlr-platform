@@ -7,12 +7,39 @@ See `docs/tournament-format.md` for the full tournament rules and format.
 ## Commands
 
 ```bash
-npm run dev      # Dev server at localhost:3000
-npm run build    # Production build
-npm run lint     # ESLint
+npm run dev          # Dev server at localhost:3000
+npm run build        # Production build
+npm run lint         # ESLint
+npm run test         # All Playwright tests
+npm run test:logic   # Bracket logic unit tests (no server needed)
+npm run test:ui      # Auth + super-admin UI tests (needs dev server + .env.test)
 ```
 
 Requires **Node 20+**.
+
+## Testing rules — mandatory before marking any task done
+
+1. **Always run `npm run test:logic` after touching `src/lib/tournament/bracket.ts`** — these 24 tests cover score validation, game/encounter winner logic, composition constraints, and QF seeding. They must all pass.
+
+2. **After building or modifying any UI feature, use the Playwright MCP browser tools** (`mcp__playwright_*`) to manually walk through the affected workflow on `http://localhost:3000`. Start the dev server with `npm run dev` if it is not already running.
+   - Navigate to the relevant page
+   - Click through the full happy path
+   - Test at least one error/edge case (empty form, wrong input, locked step)
+   - Take a screenshot if something looks wrong
+
+3. **Run `npm run test:ui` when auth flows or role routing changes.** Requires `.env.test` with E2E credentials (see below).
+
+4. **Add a Playwright test** in `e2e/` whenever a new workflow is completed. Tests go in the file matching the role: `super-admin.spec.ts`, `squad-admin.spec.ts`, `player.spec.ts`, or `bracket-logic.spec.ts` for pure logic.
+
+## E2E test credentials
+
+Test accounts live in Supabase. Credentials are written to `.env.test` (gitignored).
+To regenerate them: `node scripts/create-e2e-users.mjs`
+
+Accounts:
+- `e2e-super-admin@nlr-test.internal` — role: super_admin
+- `e2e-squad-admin@nlr-test.internal` — role: squad_admin
+- `e2e-player@nlr-test.internal` — role: player
 
 ## Stack
 
@@ -91,6 +118,24 @@ Colors are CSS variables in `globals.css` under `@theme {}`. Swap them to rebran
 - `player` → `/player/*`
 
 Middleware enforces role routing. First-login forced password change is enforced in middleware for non-super-admin users.
+
+## Web browsing rules (Playwright MCP)
+
+When using the Playwright MCP browser on **external sites** (anything not localhost):
+
+**Always allowed without asking:**
+- Navigating to any URL to observe or read content
+- Taking screenshots
+- Clicking links that just navigate (no side effects)
+
+**Always ask Louis first before:**
+- Clicking any button that submits a form on an external site
+- Filling in login/signup/registration forms
+- Clicking anything labeled Buy, Purchase, Order, Subscribe, Checkout, Donate, Add to cart
+- Creating an account or profile on any third-party service
+- Posting, sending, or publishing anything on an external platform
+
+If there is any doubt about whether an action is reversible or has a cost, ask.
 
 ## Branch rules
 
