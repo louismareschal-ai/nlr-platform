@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AppShell } from "@/components/layout/AppShell";
 
-export default async function RootPage() {
+export default async function PlayerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
   const { data: player } = await supabase
@@ -17,7 +21,5 @@ export default async function RootPage() {
 
   if (!player) redirect("/login");
 
-  if (player.role === "super_admin") redirect("/super-admin");
-  if (player.role === "squad_admin") redirect("/squad-admin");
-  redirect("/player");
+  return <AppShell role="player">{children}</AppShell>;
 }
