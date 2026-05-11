@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { validateCompositionPoints } from "@/lib/tournament/bracket";
+import { submitComposition } from "@/app/actions/compositions";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { Player, PlayerPoints } from "@/types";
@@ -15,7 +15,6 @@ interface CompositionFormProps {
   encounterId: string;
   squadId: string;
   players: PlayerWithPoints[];
-  tournamentId: string;
   onSubmit?: () => void;
 }
 
@@ -33,7 +32,6 @@ export function CompositionForm({
   encounterId,
   squadId,
   players,
-  tournamentId,
   onSubmit,
 }: CompositionFormProps) {
   const men = players.filter((p) => p.gender === "man");
@@ -73,11 +71,11 @@ export function CompositionForm({
       }
     }
 
-    // Check for duplicate men
-    const menSlots: Slot[] = ["mixed1_man", "mixed2_man", "open1_p1", "open1_p2", "open2_p1", "open2_p2"];
-    const selectedMen = menSlots.map((s) => selection[s]).filter(Boolean);
-    if (new Set(selectedMen).size !== selectedMen.length) {
-      errs.push("Each man can only play in one game.");
+    // Each man can play in at most one open game (mixed and open can overlap)
+    const openMenSlots: Slot[] = ["open1_p1", "open1_p2", "open2_p1", "open2_p2"];
+    const openMen = openMenSlots.map((s) => selection[s]).filter(Boolean);
+    if (new Set(openMen).size !== openMen.length) {
+      errs.push("Each man can only play in one open game.");
     }
 
     // Check for duplicate women
@@ -110,33 +108,24 @@ export function CompositionForm({
     if (!valid) return;
 
     setLoading(true);
-    const supabase = createClient();
 
-    // Both women always play women's game — no additional selection needed
-    const womenIds = women.map((w) => w.id);
-
-    const { error } = await supabase.from("compositions").upsert({
-      encounter_id: encounterId,
-      squad_id: squadId,
-      mixed1_man_id: selection.mixed1_man,
-      mixed1_woman_id: selection.mixed1_woman,
-      mixed2_man_id: selection.mixed2_man,
-      mixed2_woman_id: selection.mixed2_woman,
-      open1_player1_id: selection.open1_p1,
-      open1_player2_id: selection.open1_p2,
-      open2_player1_id: selection.open2_p1,
-      open2_player2_id: selection.open2_p2,
-      submitted_at: new Date().toISOString(),
+    const result = await submitComposition(encounterId, squadId, {
+      mixed1_man_id: selection.mixed1_man!,
+      mixed1_woman_id: selection.mixed1_woman!,
+      mixed2_man_id: selection.mixed2_man!,
+      mixed2_woman_id: selection.mixed2_woman!,
+      open1_player1_id: selection.open1_p1!,
+      open1_player2_id: selection.open1_p2!,
+      open2_player1_id: selection.open2_p1!,
+      open2_player2_id: selection.open2_p2!,
     });
 
-    if (error) {
-      setErrors([error.message]);
+    if (!result.success) {
+      setErrors(result.errors ?? [result.error ?? "Unknown error"]);
       setLoading(false);
       return;
     }
 
-    // Mark composition as submitted on the encounter
-    // (server will auto-reveal if both squads have submitted — handled by DB trigger or re-check)
     onSubmit?.();
     setLoading(false);
   }

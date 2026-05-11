@@ -11,7 +11,7 @@ export default function LoginPage() {
             className="text-4xl font-bold tracking-tight"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            NLR Platform
+            NLR Open
           </h1>
         </div>
 
