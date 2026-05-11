@@ -7,7 +7,7 @@ See `docs/tournament-format.md` for the full tournament rules and format.
 ## Commands
 
 ```bash
-npm run dev          # Dev server at localhost:3000
+npm run dev          # Dev server at localhost:3010
 npm run build        # Production build
 npm run lint         # ESLint
 npm run test         # All Playwright tests
@@ -17,11 +17,21 @@ npm run test:ui      # Auth + super-admin UI tests (needs dev server + .env.test
 
 Requires **Node 20+**.
 
+## Mobile access (phone testing)
+
+When Louis says "I want to run it on my phone" (or any variation), run this script:
+
+```bash
+bash scripts/phone-access.sh
+```
+
+What it does: detects the WSL2 IP, writes a temp PowerShell script, triggers a UAC prompt to run `netsh portproxy` + firewall rule as admin, then prints the phone URL. The dev server must already be running (`npm run dev`). Phone must be on the same WiFi as the Windows machine.
+
 ## Testing rules — mandatory before marking any task done
 
 1. **Always run `npm run test:logic` after touching `src/lib/tournament/bracket.ts`** — these 24 tests cover score validation, game/encounter winner logic, composition constraints, and QF seeding. They must all pass.
 
-2. **After building or modifying any UI feature, use the Playwright MCP browser tools** (`mcp__playwright_*`) to manually walk through the affected workflow on `http://localhost:3000`. Start the dev server with `npm run dev` if it is not already running.
+2. **After building or modifying any UI feature, use the Playwright MCP browser tools** (`mcp__playwright_*`) to manually walk through the affected workflow on `http://localhost:3010`. Start the dev server with `npm run dev` if it is not already running.
    - Navigate to the relevant page
    - Click through the full happy path
    - Test at least one error/edge case (empty form, wrong input, locked step)

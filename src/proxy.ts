@@ -31,8 +31,15 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Unauthenticated users can only access /login
-  if (!user && pathname !== "/login") {
+  // Public routes — no auth required
+  const isPublic =
+    pathname === "/login" ||
+    pathname === "/change-password" ||
+    pathname.startsWith("/players") ||
+    pathname.startsWith("/tournaments");
+
+  // Unauthenticated users can only access public routes
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -41,8 +48,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Force password change on first login
-  if (user && pathname !== "/change-password") {
+  // Force password change on first login (only for authenticated, protected routes)
+  if (user && !isPublic && pathname !== "/change-password") {
     const { data: player } = await supabase
       .from("players")
       .select("role, temp_password_changed")

@@ -35,7 +35,8 @@ export default async function SuperAdminBracketPage() {
       id, bracket_slot, winner_id, squad_a_id, squad_b_id, status,
       squad_a:squads!encounters_squad_a_id_fkey(name),
       squad_b:squads!encounters_squad_b_id_fkey(name),
-      rounds(name)
+      rounds(name),
+      games(game_type, winner_squad_id, score_status)
     `)
     .eq("tournament_id", tournament.id);
 
@@ -62,6 +63,7 @@ export default async function SuperAdminBracketPage() {
             squad_a: e.squad_a as unknown as { name: string } | null,
             squad_b: e.squad_b as unknown as { name: string } | null,
             round: e.rounds as unknown as { name: string },
+            games: (e.games ?? []) as Array<{ game_type: string; winner_squad_id: string | null; score_status: string }>,
           }))}
           linkPrefix="/super-admin/encounters"
         />

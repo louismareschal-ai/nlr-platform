@@ -26,6 +26,7 @@ const navItems: Record<UserRole, NavItem[]> = {
   ],
   player: [
     { href: "/player", label: "My Schedule" },
+    { href: "/player/scores", label: "Live Scores" },
     { href: "/player/bracket", label: "Bracket" },
   ],
 };
@@ -56,7 +57,7 @@ export function AppShell({ role, children }: AppShellProps) {
               className="text-lg font-bold tracking-tight text-[#e8b84b]"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              NLR
+              NLR Open
             </span>
             <nav className="hidden sm:flex items-center gap-1">
               {items.map((item) => (

@@ -75,7 +75,6 @@ export default async function CompositionPage() {
           encounterId={encounter.id}
           squadId={me.squad_id}
           players={playersWithPoints as Parameters<typeof CompositionForm>[0]["players"]}
-          tournamentId={encounter.tournament_id}
           onSubmit={() => { window.location.reload(); }}
         />
       )}

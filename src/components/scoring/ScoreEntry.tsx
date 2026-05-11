@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { confirmScore } from "@/app/actions/scores";
 import { isValidSetScore, gameWinner } from "@/lib/tournament/bracket";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -34,6 +35,11 @@ export function ScoreEntry({
   mySquadId,
   onUpdate,
 }: ScoreEntryProps) {
+  const [localStatus, setLocalStatus] = useState<ScoreStatus>(game.score_status);
+  const [localSets, setLocalSets] = useState<GameSet[]>(game.sets);
+  const [localWinner, setLocalWinner] = useState<string | null>(game.winner_squad_id);
+  const [localEnteredBy, setLocalEnteredBy] = useState<string | null>(game.score_entered_by);
+
   // Local draft of sets being entered
   const [draft, setDraft] = useState<{ a: string; b: string }[]>([
     { a: "", b: "" },
@@ -44,12 +50,12 @@ export function ScoreEntry({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
-  const isSubmitted = game.score_status === "submitted";
-  const isConfirmed = game.score_status === "confirmed";
-  const iEnteredIt = game.score_entered_by === mySquadId;
+  const isSubmitted = localStatus === "submitted";
+  const isConfirmed = localStatus === "confirmed";
+  const iEnteredIt = localEnteredBy === mySquadId;
   const otherSquadEntered = isSubmitted && !iEnteredIt;
   const canConfirm = otherSquadEntered && !isConfirmed;
-  const canEnter = game.score_status === "pending" && !isConfirmed;
+  const canEnter = localStatus === "pending" && !isConfirmed;
   const canEdit = isSubmitted && !iEnteredIt;
 
   function parseDraftSets(): { valid: boolean; sets: GameSet[]; errors: string[] } {
@@ -119,6 +125,10 @@ export function ScoreEntry({
     if (error) {
       setErrors([error.message]);
     } else {
+      setLocalStatus("submitted");
+      setLocalSets(sets);
+      setLocalWinner(winner_squad_id);
+      setLocalEnteredBy(mySquadId);
       setEditing(false);
       onUpdate?.();
     }
@@ -127,33 +137,22 @@ export function ScoreEntry({
 
   async function handleConfirm() {
     setLoading(true);
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("games")
-      .update({
-        score_status: "confirmed",
-        score_confirmed_by: mySquadId,
-        score_confirmed_at: new Date().toISOString(),
-        status: "completed",
-      })
-      .eq("id", game.id);
-
-    if (error) {
-      setErrors([error.message]);
-    } else {
+    const result = await confirmScore(game.id);
+    if (result.success) {
+      setLocalStatus("confirmed");
       onUpdate?.();
+    } else {
+      setErrors([result.error ?? "Failed to confirm score"]);
     }
     setLoading(false);
   }
 
   async function handleDispute() {
-    // Switch to editing mode — they'll submit a new score
     setEditing(true);
-    if (game.sets.length > 0) {
+    if (localSets.length > 0) {
       setDraft(
         [0, 1, 2].map((i) => {
-          const s = game.sets[i];
+          const s = localSets[i];
           return s ? { a: String(s.score_a), b: String(s.score_b) } : { a: "", b: "" };
         })
       );
@@ -176,14 +175,14 @@ export function ScoreEntry({
       </div>
 
       {/* Existing score display */}
-      {game.sets.length > 0 && !editing && (
+      {localSets.length > 0 && !editing && (
         <div className="mb-3 space-y-1">
           <div className="grid grid-cols-3 text-xs text-[#6b6b7a] mb-1">
             <span>Set</span>
             <span className="text-center">{squadAName}</span>
             <span className="text-center">{squadBName}</span>
           </div>
-          {game.sets.map((s) => {
+          {localSets.map((s) => {
             const aWon = s.score_a > s.score_b;
             return (
               <div key={s.set_number} className="grid grid-cols-3 text-sm">
@@ -197,11 +196,11 @@ export function ScoreEntry({
               </div>
             );
           })}
-          {game.winner_squad_id && (
+          {localWinner && (
             <p className="text-xs text-[#6b6b7a] mt-2">
               Winner:{" "}
               <span className="text-[#e8b84b] font-medium">
-                {game.winner_squad_id === squadAId ? squadAName : squadBName}
+                {localWinner === squadAId ? squadAName : squadBName}
               </span>
             </p>
           )}
@@ -209,7 +208,7 @@ export function ScoreEntry({
       )}
 
       {/* Score input form */}
-      {(editing || (canEnter && game.sets.length === 0)) && (
+      {(editing || (canEnter && localSets.length === 0)) && (
         <div className="space-y-2 mb-3">
           <div className="grid grid-cols-3 text-xs text-[#6b6b7a] mb-1">
             <span>Set</span>

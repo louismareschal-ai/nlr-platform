@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NLR — Next Level Roundnet",
-  description: "Tournament management platform for Next Level Roundnet",
+  title: "NLR Open",
+  description: "The roundnet platform for the community",
 };
 
 export default function RootLayout({
