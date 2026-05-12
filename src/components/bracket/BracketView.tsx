@@ -33,9 +33,10 @@ interface EncounterCard {
 interface BracketViewProps {
   encounters: EncounterCard[];
   linkPrefix?: string;
+  onSelectEncounter?: (id: string) => void;
 }
 
-export function BracketView({ encounters, linkPrefix }: BracketViewProps) {
+export function BracketView({ encounters, linkPrefix, onSelectEncounter }: BracketViewProps) {
   const bySlot = Object.fromEntries((encounters ?? []).map((e) => [e.bracket_slot, e]));
 
   return (
@@ -51,23 +52,23 @@ export function BracketView({ encounters, linkPrefix }: BracketViewProps) {
             <div className="flex flex-col gap-3 w-52">
               <p className="label-overline text-center">Quarterfinals</p>
               {(["qf_a", "qf_b", "qf_c", "qf_d"] as BracketSlot[]).map((slot) => (
-                <EncounterSlot key={slot} slot={slot} encounter={bySlot[slot]} linkPrefix={linkPrefix} gold={false} />
+                <EncounterSlot key={slot} slot={slot} encounter={bySlot[slot]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
               ))}
             </div>
 
             {/* SF Winners */}
             <div className="w-52 mt-14">
               <p className="label-overline text-center mb-3">Semifinals</p>
-              <EncounterSlot slot="sf_winners_1" encounter={bySlot["sf_winners_1"]} linkPrefix={linkPrefix} gold />
+              <EncounterSlot slot="sf_winners_1" encounter={bySlot["sf_winners_1"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
               <div className="mt-[108px]">
-                <EncounterSlot slot="sf_winners_2" encounter={bySlot["sf_winners_2"]} linkPrefix={linkPrefix} gold />
+                <EncounterSlot slot="sf_winners_2" encounter={bySlot["sf_winners_2"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
               </div>
             </div>
 
             {/* Grand Final */}
             <div className="w-52 mt-[172px]">
               <p className="label-overline text-center mb-3">Grand Final</p>
-              <EncounterSlot slot="final" encounter={bySlot["final"]} linkPrefix={linkPrefix} gold />
+              <EncounterSlot slot="final" encounter={bySlot["final"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
             </div>
           </div>
         </div>
@@ -83,17 +84,17 @@ export function BracketView({ encounters, linkPrefix }: BracketViewProps) {
             {/* SF Placement */}
             <div className="flex flex-col gap-3 w-52">
               <p className="label-overline text-center">5th–8th Semifinals</p>
-              <EncounterSlot slot="sf_placement_1" encounter={bySlot["sf_placement_1"]} linkPrefix={linkPrefix} gold={false} />
-              <EncounterSlot slot="sf_placement_2" encounter={bySlot["sf_placement_2"]} linkPrefix={linkPrefix} gold={false} />
+              <EncounterSlot slot="sf_placement_1" encounter={bySlot["sf_placement_1"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+              <EncounterSlot slot="sf_placement_2" encounter={bySlot["sf_placement_2"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
             </div>
 
             {/* Placement finals */}
             <div className="w-52 mt-[44px]">
               <p className="label-overline text-center mb-3">Placement Finals</p>
               <div className="flex flex-col gap-3">
-                <EncounterSlot slot="third_place" encounter={bySlot["third_place"]} linkPrefix={linkPrefix} gold={false} />
-                <EncounterSlot slot="fifth_place" encounter={bySlot["fifth_place"]} linkPrefix={linkPrefix} gold={false} />
-                <EncounterSlot slot="seventh_place" encounter={bySlot["seventh_place"]} linkPrefix={linkPrefix} gold={false} />
+                <EncounterSlot slot="third_place" encounter={bySlot["third_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+                <EncounterSlot slot="fifth_place" encounter={bySlot["fifth_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+                <EncounterSlot slot="seventh_place" encounter={bySlot["seventh_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
               </div>
             </div>
           </div>
@@ -107,11 +108,13 @@ function EncounterSlot({
   slot,
   encounter,
   linkPrefix,
+  onSelect,
   gold,
 }: {
   slot: BracketSlot;
   encounter: EncounterCard | undefined;
   linkPrefix?: string;
+  onSelect?: (id: string) => void;
   gold: boolean;
 }) {
   const label = BRACKET_LABELS[slot];
@@ -120,11 +123,12 @@ function EncounterSlot({
   const gamesWonB = confirmedGames.filter((g) => g.winner_squad_id === encounter?.squad_b_id).length;
   const hasScore = confirmedGames.length > 0;
 
+  const interactive = encounter && (linkPrefix || onSelect);
   const content = (
     <div
       className={`rounded-xl border p-3 transition-colors
         ${gold ? "border-[#e8b84b]/20 bg-[#13131a]" : "border-[#1a1a24] bg-[#0d0d12]"}
-        ${linkPrefix && encounter ? "hover:border-[#e8b84b]/40 cursor-pointer" : ""}
+        ${interactive ? "hover:border-[#e8b84b]/40 cursor-pointer" : ""}
       `}
     >
       <p className="text-[10px] text-[#6b6b7a] mb-2 font-medium uppercase tracking-wide">
@@ -169,6 +173,9 @@ function EncounterSlot({
     </div>
   );
 
+  if (onSelect && encounter) {
+    return <button className="w-full text-left" onClick={() => onSelect(encounter.id)}>{content}</button>;
+  }
   if (linkPrefix && encounter) {
     return <a href={`${linkPrefix}/${encounter.id}`}>{content}</a>;
   }
