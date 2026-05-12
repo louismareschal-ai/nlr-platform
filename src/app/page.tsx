@@ -1,23 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 
-export default async function RootPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  const { data: player } = await supabase
-    .from("players")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (!player) redirect("/login");
-
-  if (player.role === "super_admin") redirect("/super-admin");
-  if (player.role === "squad_admin") redirect("/squad-admin");
-  redirect("/player");
+export default function RootPage() {
+  redirect("/tournaments");
 }
