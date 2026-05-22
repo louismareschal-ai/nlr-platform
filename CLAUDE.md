@@ -59,30 +59,72 @@ Accounts:
 - **Supabase** — auth, Postgres, Realtime subscriptions
 - **Railway** — deployment
 
+## Navigation architecture
+
+All users use the same URL structure. Role determines which tabs appear, not which app you use.
+
+**Top nav (SiteShell):** NLR Open | Tournaments | Players + Sign in/out
+
+**Tournament sub-nav tabs (role-adaptive):**
+- Bracket, Schedule, Squads (everyone)
+- My Squad (squad_admin + super_admin)
+- Manage (super_admin only)
+
+**Primary routes:**
+- `/` — redirects to `/tournaments`
+- `/tournaments` — list with status filter
+- `/tournaments/[slug]/bracket` — bracket + live scores + click-to-detail panel
+- `/tournaments/[slug]/schedule` — schedule grouped by round
+- `/tournaments/[slug]/squads` — squad rosters with player photos
+- `/tournaments/[slug]/my-squad` — composition form or score entry for squad admin
+- `/tournaments/[slug]/manage` — super_admin encounter list + links
+- `/tournaments/[slug]/manage/encounters/[id]` — encounter detail (super_admin)
+- `/tournaments/[slug]/manage/players` — player management (super_admin)
+- `/players` + `/players/[id]` — player directory + profile
+
+**Old routes (deprecated, still functional):** `/super-admin/*`, `/squad-admin/*`, `/player/*`
+The Manage tab still links to `/super-admin/tournaments` for tournament setup. These can be removed once the Manage tab covers everything.
+
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── login/            Login page
-│   ├── change-password/  Forced first-login password change
-│   ├── super-admin/      Super admin dashboard and tools
-│   ├── squad-admin/      Squad admin: composition, scores, players
-│   ├── player/           Player read-only view: schedule, bracket
-│   ├── page.tsx          Root redirect based on role
-│   ├── layout.tsx        Root layout (fonts, metadata)
-│   └── globals.css       Tailwind v4 theme tokens
+│   ├── login/                Login page
+│   ├── change-password/      Forced first-login password change
+│   ├── tournaments/          Primary tournament routes (all roles)
+│   │   ├── layout.tsx        Reads auth, wraps with SiteShell
+│   │   ├── page.tsx          Tournament list
+│   │   └── [slug]/
+│   │       ├── layout.tsx    Fetches tournament + user role, renders TournamentSubNav
+│   │       ├── bracket/      Bracket with live scores + EncounterPanel
+│   │       ├── schedule/     Schedule grouped by round
+│   │       ├── squads/       Squad rosters
+│   │       ├── my-squad/     Composition + score entry (squad_admin+)
+│   │       └── manage/       Encounter list + management (super_admin)
+│   ├── players/              Player directory + profiles
+│   ├── super-admin/          DEPRECATED: tournament setup flow (still linked from Manage tab)
+│   ├── squad-admin/          DEPRECATED: no longer primary navigation
+│   ├── player/               DEPRECATED: no longer primary navigation
+│   ├── page.tsx              Root redirect to /tournaments
+│   ├── layout.tsx            Root layout (fonts, metadata)
+│   └── globals.css           Tailwind v4 theme tokens
 ├── components/
-│   ├── bracket/          BracketView — visual bracket display
-│   ├── composition/      CompositionForm — squad composition submission
-│   ├── layout/           AppShell — top nav, mobile nav
-│   ├── scoring/          ScoreEntry — score entry + confirmation flow
-│   └── ui/               Button, Card, Badge, Input
+│   ├── bracket/
+│   │   ├── BracketView.tsx          Visual bracket (cards are buttons when onSelect given)
+│   │   ├── BracketWithPanel.tsx     Client wrapper: manages selectedEncounterId state
+│   │   └── EncounterPanel.tsx       Slide-in detail panel with Realtime subscriptions
+│   ├── composition/                 CompositionForm — squad composition submission
+│   ├── layout/
+│   │   ├── SiteShell.tsx            Unified top nav (client, handles sign-out)
+│   │   └── TournamentSubNav.tsx     Role-adaptive sub-nav (client, uses usePathname)
+│   ├── scoring/                     ScoreEntry — score entry + confirmation flow
+│   └── ui/                          Button, Card, Badge, Input
 ├── lib/
-│   ├── supabase/         client.ts (browser), server.ts (SSR)
-│   └── tournament/       bracket.ts — scoring logic, validation, bracket paths
-├── middleware.ts          Auth guard + role-based redirects
-└── types/index.ts         All TypeScript types
+│   ├── supabase/                    client.ts (browser), server.ts (SSR + createServiceClient)
+│   └── tournament/                  bracket.ts — scoring logic, validation, bracket paths
+├── middleware.ts                    Auth guard + role-based redirects
+└── types/index.ts                   All TypeScript types
 ```
 
 ## Key domain logic (bracket.ts)
@@ -123,11 +165,11 @@ Colors are CSS variables in `globals.css` under `@theme {}`. Swap them to rebran
 
 ## Roles
 
-- `super_admin` → `/super-admin/*`
-- `squad_admin` → `/squad-admin/*`
-- `player` → `/player/*`
+- `super_admin` — sees all tabs including Manage
+- `squad_admin` — sees My Squad tab (composition + score entry)
+- `player` / unauthenticated — read-only (Bracket, Schedule, Squads)
 
-Middleware enforces role routing. First-login forced password change is enforced in middleware for non-super-admin users.
+Middleware enforces auth for legacy routes (`/super-admin`, `/squad-admin`, `/player`). First-login forced password change is enforced in middleware for non-super-admin users. The new `/tournaments/*` routes are publicly readable; sensitive actions (score entry, composition) check auth server-side.
 
 ## Web browsing rules (Playwright MCP)
 
