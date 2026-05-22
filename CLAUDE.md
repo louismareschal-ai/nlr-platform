@@ -194,3 +194,20 @@ If there is any doubt about whether an action is reversible or has a cost, ask.
 - Never commit to `main` directly
 - Branch: `feature/<name>` → PR → merge to `main`
 - `main` will be auto-deployed on Railway
+
+## Cost discipline (non-negotiable)
+
+The platform must stay **free for NGBs** to justify existing instead of PlayerZone. Louis is fronting the infra cost from his pocket. Hard ceilings: ~50 $/month at 20-NGB steady state, <100 $/month even during a Worlds-scale peak. If you ever push a change that could break these, flag it explicitly and propose a mitigation.
+
+**Rules to enforce on every PR touching public pages, media, or realtime:**
+
+1. **Media never on Supabase Storage.** Photos, videos, replays → Cloudflare R2 or Bunny CDN. Supabase egress (0,09 $/GB above 250GB) is the biggest cost trap.
+2. **Public pages (bracket, schedule, players, squads) must be cached.** Use Next.js ISR (`export const revalidate = 60` or similar) or a CDN. A spectator pageview should not hit Supabase on every load.
+3. **Realtime is admin-only.** Squad admins and super admins subscribe. Spectators poll (10s) or use SSE via edge. Concurrent Realtime connections are the second-biggest driver.
+4. **Heavy stats (palmarès, cross-tournament rankings) = materialized views + nightly refresh**, not live queries.
+5. **No idle preview/branching envs.** Supabase Branching is 0,32 $/day each. Tear down or use local dev.
+6. **Search at scale → Meilisearch on Railway (~5 $/mo)**, not `LIKE` on Postgres.
+
+**Audit trigger:** if the monthly Supabase bill trends past 100 $/mo, stop and audit before paying. Usually it is an uncached page, media on Supabase Storage, or a runaway Realtime subscription.
+
+**Escape hatches** (if pricing changes or we get stuck): Plan B = self-host Postgres on Hetzner + PostgREST (~30-50 €/mo + ops burden). Plan C = full OSS stack (Pocketbase / Appwrite on Coolify). Do not improvise these under pressure: keep the migration path documented.
