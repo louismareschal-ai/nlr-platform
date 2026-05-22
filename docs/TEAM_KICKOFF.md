@@ -2,7 +2,7 @@
 
 _Drafted 2026-05-22. Owner: Louis. Edit freely as a team._
 
-This doc is the single source of truth for **how the three of us work together** in the same repo. Louis (NLR sprint), Alexandre (Worlds platform), Emily (cahier des charges + UI). It is not the product spec, it is the operating manual.
+This doc is the single source of truth for **how the three of us work together** in the same repo. Louis (NLR sprint), Alexandre (Worlds platform), Amely (cahier des charges + UI). It is not the product spec, it is the operating manual.
 
 ---
 
@@ -15,7 +15,7 @@ Three horizons:
 | Horizon | Owner | Deadline | Status |
 |---|---|---|---|
 | **NLR 2026** (8 squads, Mannheim) | Louis | June 6, 2026 | sprint mode, ~15 days left |
-| **Worlds 2026 Paris** (~700 athletes) | Alexandre + Emily | September 2026 | starts next week |
+| **Worlds 2026 Paris** (~700 athletes) | Alexandre + Amely | September 2026 | starts next week |
 | **Multi-NGB platform** (20+ federations) | everyone | 2027+ | architectural groundwork along the way |
 
 ---
@@ -32,15 +32,16 @@ Until then: `athlete_profiles` stays read-only for the public players directory.
 
 ## Rules of cohabitation
 
-These exist so Louis can sprint to June 6 without the Worlds work breaking under him, **and** so Alexandre and Emily can move fast without waiting on NLR.
+These exist so Louis can sprint to June 6 without the Worlds work breaking under him, **and** so Alexandre and Amely can move fast without waiting on NLR.
 
-1. **NLR sprint is sacred until June 6.** No breaking changes to the core (auth, bracket logic, encounter/game schema, tournament routes) until then. If Alexandre needs a core change for Worlds, he discusses with Louis first. The change either lands behind a flag, or waits.
-2. **Louis owns NLR scope.** Anything NLR-specific (this specific tournament's pages, copy, fixtures, scripts) is Louis's call alone, no review needed.
-3. **Alexandre owns Worlds scope.** Anything Worlds-specific (new routes under `/worlds-2026/`, new pool play logic, new self-registration flow) is Alexandre's call alone, no review needed.
-4. **Anything shared = both review.** Schema changes, `bracket.ts`, `middleware.ts`, components used by both, `CLAUDE.md`. Cross-review required, both must agree before merge.
-5. **Emily owns UI.** Design system, components in `src/components/ui/`, layout rhythm, color tokens in `globals.css`. She can refactor visuals without asking, as long as functional flows still pass E2E tests.
-6. **`main` is auto-deployed.** Never commit directly. Always feature branch + PR. Already enforced in `CLAUDE.md`.
-7. **Feature branches die fast.** Target merge within 3-5 days. No 3-month-long `feature/worlds` branch. If a big feature, break it into small mergeable slices behind a flag.
+1. **NLR sprint is sacred until June 6.** No breaking changes to the core (auth, bracket logic, encounter/game schema, tournament routes) until then. If Alexandre needs a core change for Worlds, he pings Louis async first (one line, not a meeting). The change either lands behind a flag, or waits.
+2. **Louis owns NLR scope.** Anything NLR-specific (this specific tournament's pages, copy, fixtures, scripts) is Louis's call alone.
+3. **Alexandre owns Worlds scope.** Anything Worlds-specific (new routes under `/worlds-2026/`, pool play logic, self-registration flow) is Alexandre's call alone.
+4. **Amely owns UI.** Design system, components in `src/components/ui/`, layout rhythm, color tokens in `globals.css`. She can refactor visuals freely, as long as functional flows still pass E2E tests.
+5. **No human PR review.** We do not have time for it. Each person uses an AI reviewer (Claude Code, Codex, or whatever they prefer) on their own branch before merging. The AI must check: tests pass, no banned words (see `CLAUDE.md`), no breaking changes to other scopes, cost-discipline rules respected.
+6. **Touching shared code = ping the other owner async** (one line message). Not a review, a heads-up. The other owner can object within 24h, otherwise it ships.
+7. **`main` is auto-deployed.** Never commit directly. Always feature branch + merge. Already enforced in `CLAUDE.md`.
+8. **Feature branches die fast.** Target merge within 3-5 days. No 3-month-long `feature/worlds` branch. Break big features into small mergeable slices behind a flag.
 
 ---
 
@@ -50,7 +51,7 @@ These exist so Louis can sprint to June 6 without the Worlds work breaking under
 feat/nlr-<thing>            Louis, NLR-specific
 feat/worlds-<thing>         Alexandre, Worlds-specific
 feat/core-<thing>           anything that affects both, cross-review required
-feat/ui-<thing>             Emily, visual or design system work
+feat/ui-<thing>             Amely, visual or design system work
 fix/<thing>, docs/<thing>, chore/<thing>   anyone
 ```
 
@@ -67,8 +68,8 @@ All specs live in `docs/specs/`, versioned in the repo. Markdown. No Notion, no 
 |---|---|---|
 | `docs/specs/platform-core.md` | Alexandre + Louis | shared vocabulary, data model, what is core vs feature-specific |
 | `docs/specs/nlr-2026.md` | Louis | what NLR needs that goes beyond core |
-| `docs/specs/worlds-2026.md` | Alexandre + Emily | Worlds format, registration, payment, categories, languages |
-| `docs/specs/design-system.md` | Emily | tokens, components, principles, accessibility |
+| `docs/specs/worlds-2026.md` | Alexandre + Amely | Worlds format, registration, payment, categories, languages |
+| `docs/specs/design-system.md` | Amely | tokens, components, principles, accessibility |
 | `docs/tournament-format.md` | Louis | NLR tournament rules reference (already exists) |
 
 Specs are **living docs**. Update them when you change the code, not before, not after, *with* the PR.
@@ -77,47 +78,54 @@ Specs are **living docs**. Update them when you change the code, not before, not
 
 ## First-week action plan (week of 2026-05-26)
 
-### Tuesday: 2h kickoff session (all three)
+No long kickoff meeting. Each person writes their cahier des charges in their corner first, then we do **one short call together (30-45 min)** to align. Pick the moment that works (before or after writing), the doc is more important than the meeting.
 
-- **0:00 → 0:30** Louis walks Alexandre and Emily through the codebase + current NLR flow (login, super-admin setup, squad-admin composition, score entry, bracket view). Real demo, real data.
-- **0:30 → 1:00** Discuss the core data model. Goal: agree on what entities are shared (Account, Player, Organization, Tournament, Encounter, Game, Format) and what each one owns. Write decisions live into `docs/specs/platform-core.md`.
-- **1:00 → 1:30** Open questions list (see "Open questions" below). Triage each into: decide now, decide this week, decide before NLR, decide before Worlds, decide for v2.
-- **1:30 → 2:00** Assign first-week deliverables (see below).
+### Async warmup (everyone, before the call)
+
+1. Read this doc fully.
+2. Read `CLAUDE.md` at the repo root.
+3. Read your spec stub in `docs/specs/`:
+   - Louis → `docs/specs/nlr-2026.md` (to be written by Louis, short, NLR-only what is left to do)
+   - Alexandre → `docs/specs/worlds-2026.md` (stub exists with questions)
+   - Amely → `docs/specs/design-system.md` (stub exists with questions)
+   - Everyone → `docs/specs/platform-core.md` (stub exists with questions, this is the convergence doc)
+4. Answer the questions in your stub, in markdown, push as `feat/<scope>-spec-v1`.
+
+### The short call (30-45 min, schedule when convenient)
+
+- **Quick demo of the current app** (Louis, 10 min, can be on Louis's phone via `bash scripts/phone-access.sh`)
+- **Walk through each person's spec draft** (15-20 min, decide what is locked vs open)
+- **Triage the platform-core questions** (10 min, see Open questions below)
+
+That is it. No second meeting unless something is truly blocked. Async wins.
 
 ### First week deliverables (target Friday 2026-05-29)
 
-**Louis (NLR sprint, ~80% time on this)**
+**Louis (NLR sprint, almost 100% focus)**
 - Test My Squad flow end-to-end (composition + score entry as squad admin)
 - Test Manage tab end-to-end (encounter detail, player management)
 - Set up the 4 missing squad admins (Paris Outlaws, Hamburg Kings, Vienna Wolves, Bordeaux Storm)
 - Side-by-side realtime test (2 browsers)
-- **20% time** for cross-review of core PRs from Alexandre
+- Write `docs/specs/nlr-2026.md`: just the NLR-specific punchlist, short, no architecture
 
 **Alexandre (Worlds platform, ramp-up)**
 - Read the codebase top to bottom, including `bracket.ts`, `middleware.ts`, server actions
-- Write `docs/specs/platform-core.md` first draft (entities, relationships, what survives across tournaments)
-- Write `docs/specs/worlds-2026.md` first draft (format hypothesis, categories, registration model, payment yes/no, i18n yes/no)
-- Identify what NLR-specific code in the repo should be generalized vs left alone until June 6
-- Set up his dev environment, create test data for a hypothetical "Worlds" tournament in a separate seed script, no shared fixtures with NLR
+- Fill in `docs/specs/platform-core.md` (answer the questions, propose entities, do not wait for Louis)
+- Fill in `docs/specs/worlds-2026.md` (answer the questions, write the format hypothesis)
+- Identify what NLR-specific code should be generalized vs left alone until June 6, list it in the spec
+- Set up dev environment, create a `seed-worlds.mjs` script, no shared fixtures with NLR
 
-**Emily (cahier des charges + UI)**
-- Read the codebase from a user perspective, click through every flow
-- Write `docs/specs/design-system.md` first draft documenting current tokens, components, and gaps
-- Audit current UI for inconsistencies, list them in the doc
-- Sketch (Figma) the spectator landing experience for both NLR and Worlds, since this is currently weak and not in either critical path
-- Identify the 3 highest-leverage UI improvements that do not touch business logic
-
-### Friday end-of-week sync (30 min)
-
-- Each person walks through their first draft
-- Decide which open questions are unblocked and which need more info
-- Plan next week
+**Amely (cahier des charges + UI)**
+- Click through every flow as a user, note what is confusing
+- Fill in `docs/specs/design-system.md` (answer the questions, document tokens + gaps)
+- Sketch the spectator landing experience for both NLR and Worlds (Figma is fine, link in the spec)
+- List the 3 highest-leverage UI improvements that do not touch business logic
 
 ---
 
-## Open questions to triage on Tuesday
+## Open questions to triage during the call
 
-These are the things I would not let drift past the kickoff. Mark each one as **decide now / this week / before NLR / before Worlds / v2**.
+These are the things to not let drift. Mark each one as **decide now / this week / before NLR / before Worlds / v2**. Most live in the spec stubs (`platform-core.md`, `worlds-2026.md`, `design-system.md`), this is the summary.
 
 ### Architecture
 1. Multi-tenant: do we activate `organizations` for Worlds, or stay implicit until later?
@@ -138,10 +146,10 @@ These are the things I would not let drift past the kickoff. Mark each one as **
 12. Tournament points: stay as `mixed_points / open_points / women_points` per tournament, or move to athlete-wide rating?
 
 ### Process
-13. Code review SLA: 24h response time?
-14. Daily standup or async only?
-15. Who is the tiebreaker when Louis and Alexandre disagree on a shared change? (suggestion: whoever owns the closer deadline)
-16. Communication channel: Slack? Discord? GitHub issues?
+13. Async-only or weekly sync call? (suggestion: async-only, optional 30 min Friday)
+14. Who is the tiebreaker when Louis and Alexandre disagree on a shared change? (suggestion: whoever owns the closer deadline)
+15. Communication channel: Slack? Discord? WhatsApp?
+16. Which AI reviewer does each person use, and what is its checklist?
 
 ### NGB onboarding (v2 but worth flagging)
 17. How does a new NGB get an account? Self-service, or Louis/Alexandre create manually?
@@ -157,7 +165,7 @@ To protect the sprint and the focus:
 - No Stripe integration (decide first if needed)
 - No multi-language (decide first if needed)
 - No new Supabase migration without both Louis and Alexandre signing off
-- No design system rewrite (Emily documents first, refactors later)
+- No design system rewrite (Amely documents first, refactors later)
 - No deployment changes (Railway stays)
 
 ---
