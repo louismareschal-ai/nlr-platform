@@ -8,6 +8,15 @@ function countryFlag(code: string | null) {
   return String.fromCodePoint(...code.toUpperCase().split("").map((c) => c.charCodeAt(0) + offset));
 }
 
+function countryName(code: string | null) {
+  if (!code) return null;
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code.toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
+}
+
 function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -88,12 +97,6 @@ export default async function PlayerProfilePage({
     .eq("athlete_id", athlete.id)
     .order("tournament_date", { ascending: false });
 
-  // Only compute win rate when we have real loss data — losses=0 means not scraped
-  const winRate =
-    athlete.total_wins > 0 && athlete.total_losses > 0
-      ? Math.round((athlete.total_wins / (athlete.total_wins + athlete.total_losses)) * 100)
-      : null;
-
   const seasons = [...new Set((results ?? []).map((r: { season: string | null }) => r.season).filter(Boolean))].sort().reverse();
 
   return (
@@ -131,16 +134,11 @@ export default async function PlayerProfilePage({
             {athlete.country && (
               <span className="flex items-center gap-1.5 text-sm text-[#6b6b7a]">
                 <span className="text-xl">{countryFlag(athlete.country)}</span>
-                {athlete.country}
+                {countryName(athlete.country)}
               </span>
             )}
             {athlete.club && (
               <span className="text-sm text-[#6b6b7a]">{athlete.club}</span>
-            )}
-            {athlete.gender && (
-              <span className="px-2 py-0.5 rounded-full bg-[#1a1a24] text-xs text-[#6b6b7a] capitalize">
-                {athlete.gender}
-              </span>
             )}
           </div>
           {athlete.bio && (
@@ -157,20 +155,6 @@ export default async function PlayerProfilePage({
             </a>
           )}
         </div>
-      </div>
-
-      {/* Career stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {athlete.total_wins > 0 && (
-          <StatCard label="Tournament wins" value={athlete.total_wins} color="text-[#34d399]" />
-        )}
-        {athlete.total_losses > 0 && (
-          <StatCard label="Losses" value={athlete.total_losses} color="text-[#f87171]" />
-        )}
-        {winRate !== null && (
-          <StatCard label="Win rate" value={`${winRate}%`} />
-        )}
-        <StatCard label="Tournaments" value={(results ?? []).length} />
       </div>
 
       {/* Tournament history */}
@@ -283,21 +267,3 @@ export default async function PlayerProfilePage({
   );
 }
 
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: number | string;
-  color?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-[#1a1a24] bg-[#0d0d12] p-4 text-center">
-      <p className={`text-2xl font-bold ${color ?? "text-[#f0ece3]"}`} style={{ fontFamily: "var(--font-display)" }}>
-        {value}
-      </p>
-      <p className="text-xs text-[#6b6b7a] mt-1">{label}</p>
-    </div>
-  );
-}

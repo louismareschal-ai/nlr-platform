@@ -86,12 +86,6 @@ export default async function PlayersPage({ searchParams }: SearchProps) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {(athletes ?? []).map((athlete) => {
-            // Only show win rate when we have loss data; 100% from tournament wins badge is misleading
-            const winRate =
-              athlete.total_wins > 0 && athlete.total_losses > 0
-                ? Math.round((athlete.total_wins / (athlete.total_wins + athlete.total_losses)) * 100)
-                : null;
-
             // playerzone_id may be stored as a full URL — extract just the numeric segment
             const playerzoneSlug = athlete.playerzone_id
               ? athlete.playerzone_id.split("/").pop()
@@ -133,18 +127,6 @@ export default async function PlayersPage({ searchParams }: SearchProps) {
                     </div>
                     {athlete.club && (
                       <p className="text-xs text-[#6b6b7a] mt-0.5 truncate">{athlete.club}</p>
-                    )}
-                    {(athlete.total_wins > 0 || athlete.total_losses > 0) && (
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="text-xs text-[#6b6b7a]">
-                          <span className="text-[#34d399] font-medium">{athlete.total_wins}W</span>
-                          {" / "}
-                          <span className="text-[#f87171] font-medium">{athlete.total_losses}L</span>
-                        </span>
-                        {winRate !== null && (
-                          <span className="text-xs text-[#6b6b7a]">{winRate}%</span>
-                        )}
-                      </div>
                     )}
                   </div>
                 </div>
