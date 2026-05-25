@@ -162,16 +162,27 @@ function EncounterSlot({
   const hasScore = confirmedGames.length > 0;
 
   const interactive = encounter && (linkPrefix || onSelect);
+  const isLive =
+    encounter &&
+    ["composition", "mixed_round", "open_round", "scoring"].includes(encounter.status);
   const content = (
     <div
       className={`rounded-xl border p-3 transition-colors
-        ${gold ? "border-[#e8b84b]/20 bg-[#13131a]" : "border-[#1a1a24] bg-[#0d0d12]"}
+        ${isLive ? "border-[#e8b84b]/50 bg-[#13131a]" : gold ? "border-[#e8b84b]/20 bg-[#13131a]" : "border-[#1a1a24] bg-[#0d0d12]"}
         ${interactive ? "hover:border-[#e8b84b]/40 cursor-pointer" : ""}
       `}
     >
-      <p className="text-[10px] text-[#6b6b7a] mb-2 font-medium uppercase tracking-wide">
-        {label}
-      </p>
+      <div className="flex items-center justify-between mb-2 gap-2">
+        <p className="text-[10px] text-[#6b6b7a] font-medium uppercase tracking-wide truncate">
+          {label}
+        </p>
+        {isLive && (
+          <span className="flex items-center gap-1 text-[9px] font-bold text-[#e8b84b] uppercase tracking-wide shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#e8b84b] animate-pulse" />
+            Live
+          </span>
+        )}
+      </div>
 
       <SquadRow
         name={encounter?.squad_a?.name ?? "TBD"}
