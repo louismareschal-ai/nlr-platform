@@ -66,6 +66,9 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith("/super-admin") && player?.role !== "super_admin") {
       return NextResponse.redirect(new URL("/", request.url));
     }
+    if (pathname.startsWith("/admin") && player?.role !== "super_admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     if (
       pathname.startsWith("/squad-admin") &&
       !["squad_admin", "super_admin"].includes(player?.role ?? "")
