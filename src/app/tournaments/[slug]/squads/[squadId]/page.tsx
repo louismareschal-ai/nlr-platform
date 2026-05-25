@@ -181,7 +181,17 @@ export default async function SquadDetailPage({
       </div>
 
       {/* Encounters */}
-      {(encounters?.length ?? 0) > 0 && (
+      {(encounters?.length ?? 0) === 0 ? (
+        <div>
+          <p className="label-overline mb-3">Matches</p>
+          <div className="rounded-xl border border-dashed border-[#1a1a24] bg-[#0d0d12]/50 p-6 text-center">
+            <p className="text-sm text-[#6b6b7a]">No matches scheduled yet.</p>
+            <p className="text-xs text-[#6b6b7a] mt-1">
+              The bracket will populate once the tournament starts.
+            </p>
+          </div>
+        </div>
+      ) : (
         <div>
           <p className="label-overline mb-3">Matches</p>
           <div className="space-y-2">
