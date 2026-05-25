@@ -46,17 +46,26 @@ export default async function TournamentSquadsPage({
             const women = players.filter((p) => p.gender === "woman");
 
             return (
-              <div key={squad.id} className="rounded-xl border border-[#1a1a24] bg-[#0d0d12] p-4">
-                <div className="flex items-center gap-2 mb-3">
+              <div key={squad.id} className="rounded-xl border border-[#1a1a24] bg-[#0d0d12] p-4 hover:border-[#e8b84b]/30 transition-colors">
+                <Link
+                  href={`/tournaments/${slug}/squads/${squad.id}`}
+                  className="flex items-center gap-2 mb-3 group"
+                >
                   {squad.seed && (
                     <span className="text-xs font-bold text-[#e8b84b] w-6 text-center">
                       #{squad.seed}
                     </span>
                   )}
-                  <h3 className="font-bold text-lg" style={{ fontFamily: "var(--font-display)" }}>
+                  <h3
+                    className="font-bold text-lg group-hover:text-[#e8b84b] transition-colors"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
                     {squad.name}
                   </h3>
-                </div>
+                  <span className="ml-auto text-xs text-[#6b6b7a] group-hover:text-[#e8b84b]">
+                    →
+                  </span>
+                </Link>
 
                 <div className="space-y-3">
                   {men.length > 0 && (

@@ -74,6 +74,7 @@ export default async function TournamentBracketPage({
           userRole={role}
           mySquadId={mySquadId}
           manageLinkBase={role === "super_admin" ? `/tournaments/${slug}/manage` : undefined}
+          tournamentSlug={slug}
         />
       )}
     </div>

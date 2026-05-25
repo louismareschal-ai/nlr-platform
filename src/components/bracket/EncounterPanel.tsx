@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ScoreEntry } from "@/components/scoring/ScoreEntry";
 import type { GameSet, ScoreStatus } from "@/types";
@@ -50,6 +51,7 @@ interface EncounterPanelProps {
   userRole: string | null;
   mySquadId: string | null;
   manageLinkBase?: string;
+  tournamentSlug?: string;
   onClose: () => void;
 }
 
@@ -58,6 +60,7 @@ export function EncounterPanel({
   userRole,
   mySquadId,
   manageLinkBase,
+  tournamentSlug,
   onClose,
 }: EncounterPanelProps) {
   const [detail, setDetail] = useState<EncounterDetail | null>(null);
@@ -191,7 +194,25 @@ export function EncounterPanel({
               <>
                 <p className="text-xs text-[#6b6b7a] mb-0.5 capitalize">{detail.status.replace("_", " ")}</p>
                 <h2 className="text-lg font-bold" style={{ fontFamily: "var(--font-display)" }}>
-                  {detail.squad_a.name} vs {detail.squad_b.name}
+                  {tournamentSlug ? (
+                    <>
+                      <Link
+                        href={`/tournaments/${tournamentSlug}/squads/${detail.squad_a_id}`}
+                        className="hover:text-[#e8b84b] transition-colors"
+                      >
+                        {detail.squad_a.name}
+                      </Link>{" "}
+                      <span className="text-[#6b6b7a]">vs</span>{" "}
+                      <Link
+                        href={`/tournaments/${tournamentSlug}/squads/${detail.squad_b_id}`}
+                        className="hover:text-[#e8b84b] transition-colors"
+                      >
+                        {detail.squad_b.name}
+                      </Link>
+                    </>
+                  ) : (
+                    <>{detail.squad_a.name} vs {detail.squad_b.name}</>
+                  )}
                 </h2>
               </>
             ) : (
