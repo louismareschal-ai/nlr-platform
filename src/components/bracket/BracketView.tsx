@@ -39,6 +39,14 @@ interface BracketViewProps {
 export function BracketView({ encounters, linkPrefix, onSelectEncounter }: BracketViewProps) {
   const bySlot = Object.fromEntries((encounters ?? []).map((e) => [e.bracket_slot, e]));
 
+  const slotProps = (slot: BracketSlot, gold: boolean) => ({
+    slot,
+    encounter: bySlot[slot],
+    linkPrefix,
+    onSelect: onSelectEncounter,
+    gold,
+  });
+
   return (
     <div className="space-y-10">
       {/* Winners Bracket */}
@@ -46,29 +54,40 @@ export function BracketView({ encounters, linkPrefix, onSelectEncounter }: Brack
         <p className="text-[10px] font-bold text-[#e8b84b] uppercase tracking-widest mb-4">
           Winners Bracket
         </p>
-        <div className="overflow-x-auto">
+        {/* Mobile: stacked rounds */}
+        <div className="md:hidden space-y-6">
+          <RoundColumn title="Quarterfinals">
+            {(["qf_a", "qf_b", "qf_c", "qf_d"] as BracketSlot[]).map((s) => (
+              <EncounterSlot key={s} {...slotProps(s, false)} />
+            ))}
+          </RoundColumn>
+          <RoundColumn title="Semifinals">
+            <EncounterSlot {...slotProps("sf_winners_1", true)} />
+            <EncounterSlot {...slotProps("sf_winners_2", true)} />
+          </RoundColumn>
+          <RoundColumn title="Grand Final">
+            <EncounterSlot {...slotProps("final", true)} />
+          </RoundColumn>
+        </div>
+        {/* Desktop: bracket tree */}
+        <div className="hidden md:block overflow-x-auto">
           <div className="flex gap-5 min-w-max items-start">
-            {/* QFs */}
             <div className="flex flex-col gap-3 w-52">
               <p className="label-overline text-center">Quarterfinals</p>
-              {(["qf_a", "qf_b", "qf_c", "qf_d"] as BracketSlot[]).map((slot) => (
-                <EncounterSlot key={slot} slot={slot} encounter={bySlot[slot]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+              {(["qf_a", "qf_b", "qf_c", "qf_d"] as BracketSlot[]).map((s) => (
+                <EncounterSlot key={s} {...slotProps(s, false)} />
               ))}
             </div>
-
-            {/* SF Winners */}
             <div className="w-52 mt-14">
               <p className="label-overline text-center mb-3">Semifinals</p>
-              <EncounterSlot slot="sf_winners_1" encounter={bySlot["sf_winners_1"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
+              <EncounterSlot {...slotProps("sf_winners_1", true)} />
               <div className="mt-[108px]">
-                <EncounterSlot slot="sf_winners_2" encounter={bySlot["sf_winners_2"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
+                <EncounterSlot {...slotProps("sf_winners_2", true)} />
               </div>
             </div>
-
-            {/* Grand Final */}
             <div className="w-52 mt-[172px]">
               <p className="label-overline text-center mb-3">Grand Final</p>
-              <EncounterSlot slot="final" encounter={bySlot["final"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold />
+              <EncounterSlot {...slotProps("final", true)} />
             </div>
           </div>
         </div>
@@ -79,27 +98,46 @@ export function BracketView({ encounters, linkPrefix, onSelectEncounter }: Brack
         <p className="text-[10px] font-bold text-[#6b6b7a] uppercase tracking-widest mb-4">
           Placement Bracket
         </p>
-        <div className="overflow-x-auto">
+        {/* Mobile: stacked rounds */}
+        <div className="md:hidden space-y-6">
+          <RoundColumn title="5th-8th Semifinals">
+            <EncounterSlot {...slotProps("sf_placement_1", false)} />
+            <EncounterSlot {...slotProps("sf_placement_2", false)} />
+          </RoundColumn>
+          <RoundColumn title="Placement Finals">
+            <EncounterSlot {...slotProps("third_place", false)} />
+            <EncounterSlot {...slotProps("fifth_place", false)} />
+            <EncounterSlot {...slotProps("seventh_place", false)} />
+          </RoundColumn>
+        </div>
+        {/* Desktop: bracket tree */}
+        <div className="hidden md:block overflow-x-auto">
           <div className="flex gap-5 min-w-max items-start">
-            {/* SF Placement */}
             <div className="flex flex-col gap-3 w-52">
               <p className="label-overline text-center">5th–8th Semifinals</p>
-              <EncounterSlot slot="sf_placement_1" encounter={bySlot["sf_placement_1"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
-              <EncounterSlot slot="sf_placement_2" encounter={bySlot["sf_placement_2"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+              <EncounterSlot {...slotProps("sf_placement_1", false)} />
+              <EncounterSlot {...slotProps("sf_placement_2", false)} />
             </div>
-
-            {/* Placement finals */}
             <div className="w-52 mt-[44px]">
               <p className="label-overline text-center mb-3">Placement Finals</p>
               <div className="flex flex-col gap-3">
-                <EncounterSlot slot="third_place" encounter={bySlot["third_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
-                <EncounterSlot slot="fifth_place" encounter={bySlot["fifth_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
-                <EncounterSlot slot="seventh_place" encounter={bySlot["seventh_place"]} linkPrefix={linkPrefix} onSelect={onSelectEncounter} gold={false} />
+                <EncounterSlot {...slotProps("third_place", false)} />
+                <EncounterSlot {...slotProps("fifth_place", false)} />
+                <EncounterSlot {...slotProps("seventh_place", false)} />
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function RoundColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="label-overline mb-3">{title}</p>
+      <div className="flex flex-col gap-3">{children}</div>
     </div>
   );
 }
