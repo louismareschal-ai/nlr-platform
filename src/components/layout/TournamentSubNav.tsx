@@ -22,14 +22,14 @@ export function TournamentSubNav({
   const base = `/tournaments/${slug}`;
 
   const tabs = [
-    { href: `${base}/bracket`, label: "Bracket" },
-    { href: `${base}/schedule`, label: "Schedule" },
-    { href: `${base}/squads`, label: "Squads" },
+    { href: `${base}/bracket`, label: "Bracket", shortLabel: "Bracket" },
+    { href: `${base}/schedule`, label: "Schedule", shortLabel: "Schedule" },
+    { href: `${base}/squads`, label: "Squads", shortLabel: "Squads" },
     ...(role === "squad_admin" || role === "super_admin"
-      ? [{ href: `${base}/my-squad`, label: "My Squad" }]
+      ? [{ href: `${base}/my-squad`, label: "My Squad", shortLabel: "Squad" }]
       : []),
     ...(role === "super_admin"
-      ? [{ href: `${base}/manage`, label: "Manage" }]
+      ? [{ href: `${base}/manage`, label: "Manage", shortLabel: "Manage" }]
       : []),
   ];
 
@@ -54,7 +54,8 @@ export function TournamentSubNav({
                     : "border-transparent text-[#6b6b7a] hover:text-[#f0ece3]"
                 }`}
               >
-                {tab.label}
+                <span className="sm:hidden">{tab.shortLabel}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
               </Link>
             ))}
           </div>
