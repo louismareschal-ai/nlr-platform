@@ -1,0 +1,18 @@
+{
+  "comment": "Static mapping: physical court number -> Firebase RTDB match-N node. Range provisional, to be confirmed with Roundnet Germany. Update here when NLR's match-N range is locked in.",
+  "tournament": "nlr-2026",
+  "courts": [
+    { "court": 1,  "matchId": "match-10" },
+    { "court": 2,  "matchId": "match-11" },
+    { "court": 3,  "matchId": "match-12" },
+    { "court": 4,  "matchId": "match-13" },
+    { "court": 5,  "matchId": "match-14" },
+    { "court": 6,  "matchId": "match-15" },
+    { "court": 7,  "matchId": "match-16" },
+    { "court": 8,  "matchId": "match-17" },
+    { "court": 9,  "matchId": "match-18" },
+    { "court": 10, "matchId": "match-19" },
+    { "court": 11, "matchId": "match-20" },
+    { "court": 12, "matchId": "match-21" }
+  ]
+}
