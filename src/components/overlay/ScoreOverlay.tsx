@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { subscribeToMatch, type MatchSnapshot, type Match } from "@/lib/firebase/scoreboard";
+import { subscribeToMatch, type MatchSnapshot } from "@/lib/firebase/scoreboard";
 import { useAllMatches } from "@/lib/firebase/useAllMatches";
+import { hasActivity } from "@/lib/firebase/activity";
 
 type Props = {
   court: number;
@@ -369,14 +370,3 @@ function TickerLine({
   );
 }
 
-function hasActivity(match: Match): boolean {
-  if (match.teams_info?.team_a?.name || match.teams_info?.team_a?.player_names) return true;
-  if (match.teams_info?.team_b?.name || match.teams_info?.team_b?.player_names) return true;
-  const sets = match.score ?? {};
-  for (const key of Object.keys(sets)) {
-    if (key === "squad_score") continue;
-    const s = sets[key];
-    if ((s?.team_a_score ?? 0) > 0 || (s?.team_b_score ?? 0) > 0) return true;
-  }
-  return false;
-}
