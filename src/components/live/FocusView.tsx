@@ -5,7 +5,7 @@ import { useAllMatches } from "@/lib/firebase/useAllMatches";
 import { mergeWithDemo } from "@/lib/firebase/demoMatches";
 import { STREAMS, streamForCourt } from "@/lib/firebase/streams";
 import { matchIdForCourt } from "@/lib/firebase/courts";
-import LiveTile from "./LiveTile";
+import MiniTile from "./MiniTile";
 import ScoreboardBar from "./ScoreboardBar";
 
 export default function FocusView({ court }: { court: number }) {
@@ -114,21 +114,13 @@ export default function FocusView({ court }: { court: number }) {
             gridTemplateColumns: `repeat(${others.length}, 1fr)`,
             gap: "2px",
             background: "#000",
-            height: "18vh",
-            minHeight: "120px",
+            height: "14vh",
+            minHeight: "90px",
           }}
         >
-          {others.map((c) => {
-            const s = STREAMS.find((x) => x.court === c.court);
-            return (
-              <LiveTile
-                key={c.court}
-                court={c.court}
-                youtubeVideoId={s?.youtubeVideoId ?? null}
-                snapshot={c.snapshot}
-              />
-            );
-          })}
+          {others.map((c) => (
+            <MiniTile key={c.court} court={c.court} snapshot={c.snapshot} />
+          ))}
         </div>
       ) : null}
     </div>
