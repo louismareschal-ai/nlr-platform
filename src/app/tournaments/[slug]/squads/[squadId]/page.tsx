@@ -67,13 +67,25 @@ export default async function SquadDetailPage({
   const men = players.filter((p) => p.gender === "man");
   const women = players.filter((p) => p.gender === "woman");
 
-  const completedEncounters = (encounters as unknown as EncounterRow[] ?? []).filter(
-    (e) => e.winner_id !== null
-  );
+  const allEncounters = (encounters as unknown as EncounterRow[] ?? []);
+  const completedEncounters = allEncounters.filter((e) => e.winner_id !== null);
   const wins = completedEncounters.filter((e) => e.winner_id === squadId).length;
   const losses = completedEncounters.filter(
     (e) => e.winner_id !== null && e.winner_id !== squadId
   ).length;
+
+  // Final placement based on bracket_slot the squad won/lost
+  const finalEnc = allEncounters.find((e) => e.bracket_slot === "final");
+  const placement: { rank: number; label: string } | null = (() => {
+    if (finalEnc?.winner_id === squadId) return { rank: 1, label: "Champions" };
+    if (finalEnc && finalEnc.winner_id && finalEnc.winner_id !== squadId &&
+        (finalEnc.squad_a_id === squadId || finalEnc.squad_b_id === squadId)) {
+      return { rank: 2, label: "Finalist" };
+    }
+    const thirdEnc = allEncounters.find((e) => e.bracket_slot === "third_place");
+    if (thirdEnc?.winner_id === squadId) return { rank: 3, label: "3rd place" };
+    return null;
+  })();
 
   // Aggregate per-game-type record (M1/M2/O1/O2/W) for the squad
   const gameTypes = ["mixed1", "mixed2", "open1", "open2", "women"] as const;
@@ -97,7 +109,7 @@ export default async function SquadDetailPage({
         >
           ← All squads
         </Link>
-        <div className="flex items-baseline gap-3 mt-2">
+        <div className="flex items-baseline gap-3 mt-2 flex-wrap">
           {squad.seed && (
             <span className="text-sm font-bold text-[#e8b84b]">#{squad.seed}</span>
           )}
@@ -107,6 +119,19 @@ export default async function SquadDetailPage({
           >
             {squad.name}
           </h1>
+          {placement && (
+            <span
+              className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide ${
+                placement.rank === 1
+                  ? "bg-[#e8b84b] text-[#050508]"
+                  : placement.rank === 2
+                    ? "bg-[#e8b84b]/20 text-[#e8b84b] border border-[#e8b84b]/30"
+                    : "bg-[#1a1a24] text-[#e8b84b] border border-[#e8b84b]/20"
+              }`}
+            >
+              {placement.label}
+            </span>
+          )}
         </div>
       </div>
 
