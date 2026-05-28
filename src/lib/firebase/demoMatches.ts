@@ -2,9 +2,11 @@ import type { CourtSnapshot } from "./useAllMatches";
 import type { MatchSnapshot } from "./scoreboard";
 
 // Static fallback data shown on /live when Firebase has no activity yet.
-// All matches at 0-0. Real NLR 2026 squads + player surnames.
-// Real Firebase activity (pedal scoreboards on June 6) will replace
-// each court's snapshot via `mergeWithDemo` below.
+// Quarterfinals only, all 0-0. Real NLR 2026 squads + player surnames.
+// QF1 + QF2 in Round 1 (Mixed, 2 games per encounter), QF3 + QF4 in
+// Round 2 streaming only the Women game. No player appears on two
+// courts simultaneously. Real Firebase activity (pedal scoreboards on
+// June 6) replaces each court's snapshot via `mergeWithDemo` below.
 //
 // Convention: team.name = squad label, team.player_names = surnames of
 // the two players on the court for this game.
@@ -60,10 +62,10 @@ export const DEMO_MATCHES: CourtSnapshot[] = [
     snapshot: {
       match: {
         active_set: 1,
-        phase: "QF2 · Women",
+        phase: "QF2 · Mixed",
         teams_info: {
-          team_a: { name: "Squad 2", player_names: "Wiedmer / Amsler" },
-          team_b: { name: "Squad 7", player_names: "Gassner / Salvador" },
+          team_a: { name: "Squad 2", player_names: "Juska / Wiedmer" },
+          team_b: { name: "Squad 7", player_names: "Eigenmann / Gassner" },
         },
         score: {
           set_1: { team_a_score: 0, team_b_score: 0 },
@@ -82,10 +84,10 @@ export const DEMO_MATCHES: CourtSnapshot[] = [
     snapshot: {
       match: {
         active_set: 1,
-        phase: "QF3 · Mixed",
+        phase: "QF2 · Mixed",
         teams_info: {
-          team_a: { name: "Squad 3", player_names: "Sacchini / Barschke" },
-          team_b: { name: "Squad 6", player_names: "Florinda / Kunzelmann" },
+          team_a: { name: "Squad 2", player_names: "Colliva / Amsler" },
+          team_b: { name: "Squad 7", player_names: "Tarnutzer / Salvador" },
         },
         score: {
           set_1: { team_a_score: 0, team_b_score: 0 },
@@ -104,10 +106,10 @@ export const DEMO_MATCHES: CourtSnapshot[] = [
     snapshot: {
       match: {
         active_set: 1,
-        phase: "QF3 · Mixed",
+        phase: "QF3 · Women",
         teams_info: {
-          team_a: { name: "Squad 3", player_names: "Wolf / Meijer" },
-          team_b: { name: "Squad 6", player_names: "Hansen / Joly" },
+          team_a: { name: "Squad 3", player_names: "Meijer / Barschke" },
+          team_b: { name: "Squad 6", player_names: "Joly / Kunzelmann" },
         },
         score: {
           set_1: { team_a_score: 0, team_b_score: 0 },
@@ -144,7 +146,15 @@ export const DEMO_MATCHES: CourtSnapshot[] = [
   },
 ];
 
+// TODO before NLR 2026-06-06: flip USE_LIVE_FIREBASE to true (or filter by
+// tournament_name once Roundnet Germany confirms the value their pedals
+// will write). The match-N nodes are shared across federations: other
+// tournaments are currently writing Germany/France/etc data to match-6..,
+// which would clobber the demo display on the client.
+const USE_LIVE_FIREBASE = false;
+
 function hasLiveActivity(snapshot: MatchSnapshot | null): boolean {
+  if (!USE_LIVE_FIREBASE) return false;
   if (!snapshot?.match) return false;
   return Boolean(snapshot.match.teams_info?.team_a || snapshot.match.teams_info?.team_b);
 }
