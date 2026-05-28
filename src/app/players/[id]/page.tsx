@@ -104,14 +104,20 @@ export default async function PlayerProfilePage({
         console.error("Player fallback query error:", playerError);
       }
 
-      let squad: { id: string; name: string; seed: number | null; tournaments: { id: string; name: string; slug: string; date: string | null } } | null = null;
+      type SquadWithTournament = {
+        id: string;
+        name: string;
+        seed: number | null;
+        tournaments: { id: string; name: string; slug: string; date: string | null };
+      };
+      let squad: SquadWithTournament | null = null;
       if (player?.squad_id) {
         const { data: squadRow } = await supabase
           .from("squads")
           .select("id, name, seed, tournaments(id, name, slug, date)")
           .eq("id", player.squad_id)
           .maybeSingle();
-        squad = squadRow as unknown as typeof squad;
+        squad = squadRow as unknown as SquadWithTournament | null;
       }
 
       if (player) {
