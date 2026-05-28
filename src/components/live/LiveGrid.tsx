@@ -17,14 +17,8 @@ function gridClasses(count: number): string {
 export default function LiveGrid() {
   const all = useAllMatches();
 
-  const streamedCourts = new Set(
-    STREAMS.filter((s) => s.youtubeVideoId !== null).map((s) => s.court)
-  );
-
-  const tilesToShow =
-    streamedCourts.size > 0
-      ? all.filter((c) => streamedCourts.has(c.court))
-      : all;
+  const streamCourtSet = new Set(STREAMS.map((s) => s.court));
+  const tilesToShow = all.filter((c) => streamCourtSet.has(c.court));
 
   return (
     <div
