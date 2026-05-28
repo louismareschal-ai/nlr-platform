@@ -193,7 +193,13 @@ If there is any doubt about whether an action is reversible or has a cost, ask.
 
 - Never commit to `main` directly
 - Branch: `feature/<name>` → PR → merge to `main`
-- `main` will be auto-deployed on Railway
+- `main` auto-deploys on Railway to https://live.nextlevelroundnet.com (live since 2026-05-28)
+
+## /live page state (pre-NLR 2026-06-06)
+
+- `data/streams.json` lists the 6 streamed courts. Fill `youtubeVideoId` per court once the unlisted YouTube live events exist. The grid auto-adapts to the number of entries.
+- `src/lib/firebase/demoMatches.ts` ships a static QF demo (real NLR squads + player surnames, all 0-0) shown as fallback when no Firebase activity. Constant `USE_LIVE_FIREBASE = false` keeps the demo always-on because other federations write to the shared match-N RTDB nodes. **Before 2026-06-06, flip to `true`** (or replace `hasLiveActivity` with a `tournament_name === "<NLR value>"` check once Robin confirms what the NLR pedals will write).
+- `src/components/live/ScoreboardBar.tsx` is the shared 3-line scoreboard (court+phase / surnames+score+sets / squads+encounter). Used by both `LiveTile` (grid) and `MiniTile` (focus bottom row).
 
 ## Cost discipline (non-negotiable)
 
