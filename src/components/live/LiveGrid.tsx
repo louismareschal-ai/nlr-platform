@@ -1,6 +1,7 @@
 "use client";
 
 import { useAllMatches } from "@/lib/firebase/useAllMatches";
+import { mergeWithDemo } from "@/lib/firebase/demoMatches";
 import { STREAMS } from "@/lib/firebase/streams";
 import LiveTile from "./LiveTile";
 
@@ -15,7 +16,8 @@ function gridClasses(count: number): string {
 }
 
 export default function LiveGrid() {
-  const all = useAllMatches();
+  const live = useAllMatches();
+  const all = mergeWithDemo(live);
 
   const streamCourtSet = new Set(STREAMS.map((s) => s.court));
   const tilesToShow = all.filter((c) => streamCourtSet.has(c.court));
