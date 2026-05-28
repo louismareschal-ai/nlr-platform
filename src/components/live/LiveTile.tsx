@@ -37,46 +37,25 @@ export default function LiveTile({ court, youtubeVideoId, snapshot }: Props) {
   return (
     <Link
       href={`/live/court/${court}`}
-      style={{
-        position: "relative",
-        display: "block",
-        background: "#05050a",
-        overflow: "hidden",
-        textDecoration: "none",
-        color: "#f0ece3",
-        border: "1px solid rgba(232,184,75,0.18)",
-      }}
+      className="relative block bg-[#05050a] overflow-hidden text-[#f0ece3] no-underline border border-[#e8b84b2e]"
     >
       {embedUrl ? (
         <iframe
           src={embedUrl}
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            border: "none",
-            pointerEvents: "none",
-          }}
+          className="absolute inset-0 w-full h-full border-none pointer-events-none"
           title={`Court ${court}`}
         />
       ) : (
         <div
+          className="absolute inset-0 flex items-center justify-center text-[#6b6b7a] uppercase"
           style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             background:
               "radial-gradient(circle at 30% 30%, rgba(31,111,235,0.18), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,122,0,0.16), transparent 60%), #0a0a14",
-            color: "#6b6b7a",
             fontFamily: "var(--font-display), sans-serif",
-            fontSize: "1rem",
+            fontSize: "clamp(0.65rem, 2.4vw, 1rem)",
             letterSpacing: "0.2em",
-            textTransform: "uppercase",
           }}
         >
           Stream offline
@@ -84,43 +63,39 @@ export default function LiveTile({ court, youtubeVideoId, snapshot }: Props) {
       )}
 
       <div
+        className="absolute top-0 left-0 flex items-center text-[#e8b84b] font-bold"
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          padding: "0.45rem 0.7rem",
+          padding: "clamp(0.3rem, 1.2vw, 0.45rem) clamp(0.45rem, 1.8vw, 0.7rem)",
           background: "rgba(5,5,8,0.78)",
           backdropFilter: "blur(4px)",
           borderBottomRightRadius: "8px",
           fontFamily: "var(--font-display), sans-serif",
-          fontSize: "0.85rem",
+          fontSize: "clamp(0.65rem, 2.4vw, 0.85rem)",
           letterSpacing: "0.16em",
-          color: "#e8b84b",
-          fontWeight: 700,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.6rem",
+          gap: "clamp(0.4rem, 1.5vw, 0.6rem)",
         }}
       >
         <span>COURT {court}</span>
         {phase ? (
-          <span style={{ color: "#f0ece3", opacity: 0.7, fontSize: "0.75rem" }}>{phase}</span>
+          <span
+            className="hidden sm:inline text-[#f0ece3] opacity-70"
+            style={{ fontSize: "clamp(0.6rem, 2vw, 0.75rem)" }}
+          >
+            {phase}
+          </span>
         ) : null}
       </div>
 
       <div
+        className="absolute bottom-0 left-0 right-0"
         style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: "0.55rem 0.7rem",
+          padding: "clamp(0.35rem, 1.5vw, 0.55rem) clamp(0.45rem, 1.8vw, 0.7rem)",
           background: "linear-gradient(180deg, rgba(5,5,8,0) 0%, rgba(5,5,8,0.92) 60%)",
           fontFamily: "var(--font-display), sans-serif",
           display: "grid",
           gridTemplateColumns: "auto 1fr auto auto",
-          rowGap: "0.2rem",
-          columnGap: "0.55rem",
+          rowGap: "clamp(0.1rem, 0.5vw, 0.2rem)",
+          columnGap: "clamp(0.3rem, 1.4vw, 0.55rem)",
           alignItems: "center",
         }}
       >
@@ -128,14 +103,13 @@ export default function LiveTile({ court, youtubeVideoId, snapshot }: Props) {
         <TeamLine name={teamB} color={TEAM_B_COLOR} score={scoreB} sets={setsWon.teamB} />
         {showEncounter ? (
           <div
+            className="hidden sm:block text-[#e8b84b] text-right"
             style={{
               gridColumn: "1 / -1",
               marginTop: "0.15rem",
-              fontSize: "0.7rem",
+              fontSize: "clamp(0.55rem, 1.6vw, 0.7rem)",
               letterSpacing: "0.18em",
-              color: "#e8b84b",
               opacity: 0.85,
-              textAlign: "right",
             }}
           >
             ENCOUNTER {encounterA}–{encounterB}
@@ -162,8 +136,8 @@ function TeamLine({
       <span
         aria-hidden
         style={{
-          width: "0.3rem",
-          height: "0.95rem",
+          width: "clamp(0.2rem, 0.8vw, 0.3rem)",
+          height: "clamp(0.7rem, 2.6vw, 0.95rem)",
           background: color,
           borderRadius: "2px",
         }}
@@ -171,7 +145,7 @@ function TeamLine({
       <span
         style={{
           fontWeight: 700,
-          fontSize: "0.95rem",
+          fontSize: "clamp(0.7rem, 2.8vw, 0.95rem)",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -183,9 +157,9 @@ function TeamLine({
       <span
         style={{
           fontWeight: 800,
-          fontSize: "1.3rem",
+          fontSize: "clamp(0.95rem, 4vw, 1.3rem)",
           lineHeight: 1,
-          minWidth: "1.5rem",
+          minWidth: "clamp(1.1rem, 4vw, 1.5rem)",
           textAlign: "right",
         }}
       >
@@ -195,8 +169,8 @@ function TeamLine({
         style={{
           color: "#e8b84b",
           fontWeight: 700,
-          fontSize: "0.9rem",
-          minWidth: "0.9rem",
+          fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
+          minWidth: "clamp(0.7rem, 2.5vw, 0.9rem)",
           textAlign: "right",
         }}
       >
