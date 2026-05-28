@@ -44,3 +44,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# WSL2 Windows metadata
+*:Zone.Identifier
+
+# Firebase RTDB export (reference data, not source)
+/data/live-scoreboard-fc0e5-default-rtdb-export.json
+
+# Playwright MCP outputs
+/.playwright-mcp/

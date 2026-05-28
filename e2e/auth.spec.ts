@@ -41,9 +41,9 @@ test.describe('Auth', () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
-  test('super admin login redirects to /super-admin', async ({ page }) => {
+  test('super admin login redirects to /tournaments', async ({ page }) => {
     test.skip(!process.env.E2E_SUPER_ADMIN_EMAIL, 'E2E_SUPER_ADMIN_EMAIL not set')
     await loginAs(page, 'super_admin')
-    await expect(page).toHaveURL(/\/super-admin/)
+    await expect(page).toHaveURL(/\/tournaments/)
   })
 })

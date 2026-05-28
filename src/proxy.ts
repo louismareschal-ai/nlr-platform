@@ -36,7 +36,9 @@ export async function proxy(request: NextRequest) {
     pathname === "/login" ||
     pathname === "/change-password" ||
     pathname.startsWith("/players") ||
-    pathname.startsWith("/tournaments");
+    pathname.startsWith("/tournaments") ||
+    pathname.startsWith("/live") ||
+    pathname.startsWith("/overlay");
 
   // Unauthenticated users can only access public routes
   if (!user && !isPublic) {
@@ -62,6 +64,9 @@ export async function proxy(request: NextRequest) {
 
     // Role-based path protection
     if (pathname.startsWith("/super-admin") && player?.role !== "super_admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    if (pathname.startsWith("/admin") && player?.role !== "super_admin") {
       return NextResponse.redirect(new URL("/", request.url));
     }
     if (
