@@ -1,17 +1,11 @@
 {
-  "comment": "YouTube video IDs per court. Fill in once the 12 unlisted live events are created in YouTube Studio. Leave null for placeholders.",
+  "comment": "YouTube video IDs per streamed court. 6 entries = 6 simultaneous streams planned for NLR June 6 (1 main camera + 5 squad phones). Add more entries here if scope expands. Fill youtubeVideoId once the unlisted lives are created in YouTube Studio.",
   "courts": [
-    { "court": 1,  "youtubeVideoId": null },
-    { "court": 2,  "youtubeVideoId": null },
-    { "court": 3,  "youtubeVideoId": null },
-    { "court": 4,  "youtubeVideoId": null },
-    { "court": 5,  "youtubeVideoId": null },
-    { "court": 6,  "youtubeVideoId": null },
-    { "court": 7,  "youtubeVideoId": null },
-    { "court": 8,  "youtubeVideoId": null },
-    { "court": 9,  "youtubeVideoId": null },
-    { "court": 10, "youtubeVideoId": null },
-    { "court": 11, "youtubeVideoId": null },
-    { "court": 12, "youtubeVideoId": null }
+    { "court": 1, "youtubeVideoId": null },
+    { "court": 2, "youtubeVideoId": null },
+    { "court": 3, "youtubeVideoId": null },
+    { "court": 4, "youtubeVideoId": null },
+    { "court": 5, "youtubeVideoId": null },
+    { "court": 6, "youtubeVideoId": null }
   ]
 }
