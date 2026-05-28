@@ -33,6 +33,7 @@ export async function proxy(request: NextRequest) {
 
   // Public routes — no auth required
   const isPublic =
+    pathname === "/" ||
     pathname === "/login" ||
     pathname === "/change-password" ||
     pathname.startsWith("/players") ||
