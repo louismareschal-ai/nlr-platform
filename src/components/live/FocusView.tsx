@@ -17,7 +17,10 @@ function teamLabel(team: { name?: string; player_names?: string } | undefined): 
 export default function FocusView({ court }: { court: number }) {
   const all = useAllMatches();
   const main = all.find((c) => c.court === court);
-  const others = all.filter((c) => c.court !== court);
+  const streamCourtSet = new Set(STREAMS.map((s) => s.court));
+  const others = all.filter(
+    (c) => c.court !== court && streamCourtSet.has(c.court)
+  );
 
   const matchId = matchIdForCourt(court);
   const stream = streamForCourt(court);

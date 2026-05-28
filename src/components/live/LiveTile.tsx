@@ -54,7 +54,7 @@ export default function LiveTile({ court, youtubeVideoId, snapshot }: Props) {
             background:
               "radial-gradient(circle at 30% 30%, rgba(31,111,235,0.18), transparent 60%), radial-gradient(circle at 70% 70%, rgba(255,122,0,0.16), transparent 60%), #0a0a14",
             fontFamily: "var(--font-display), sans-serif",
-            fontSize: "clamp(0.65rem, 2.4vw, 1rem)",
+            fontSize: "clamp(0.6rem, 2vw, 1rem)",
             letterSpacing: "0.2em",
           }}
         >
@@ -63,59 +63,75 @@ export default function LiveTile({ court, youtubeVideoId, snapshot }: Props) {
       )}
 
       <div
-        className="absolute top-0 left-0 flex items-center text-[#e8b84b] font-bold"
+        className="absolute top-0 left-0"
         style={{
-          padding: "clamp(0.3rem, 1.2vw, 0.45rem) clamp(0.45rem, 1.8vw, 0.7rem)",
-          background: "rgba(5,5,8,0.78)",
-          backdropFilter: "blur(4px)",
+          padding: "clamp(0.25rem, 1vw, 0.45rem) clamp(0.4rem, 1.6vw, 0.65rem)",
+          background: "rgba(5,5,8,0.82)",
+          backdropFilter: "blur(6px)",
           borderBottomRightRadius: "8px",
-          fontFamily: "var(--font-display), sans-serif",
-          fontSize: "clamp(0.65rem, 2.4vw, 0.85rem)",
-          letterSpacing: "0.16em",
-          gap: "clamp(0.4rem, 1.5vw, 0.6rem)",
-        }}
-      >
-        <span>COURT {court}</span>
-        {phase ? (
-          <span
-            className="hidden sm:inline text-[#f0ece3] opacity-70"
-            style={{ fontSize: "clamp(0.6rem, 2vw, 0.75rem)" }}
-          >
-            {phase}
-          </span>
-        ) : null}
-      </div>
-
-      <div
-        className="absolute bottom-0 left-0 right-0"
-        style={{
-          padding: "clamp(0.35rem, 1.5vw, 0.55rem) clamp(0.45rem, 1.8vw, 0.7rem)",
-          background: "linear-gradient(180deg, rgba(5,5,8,0) 0%, rgba(5,5,8,0.92) 60%)",
           fontFamily: "var(--font-display), sans-serif",
           display: "grid",
           gridTemplateColumns: "auto 1fr auto auto",
-          rowGap: "clamp(0.1rem, 0.5vw, 0.2rem)",
-          columnGap: "clamp(0.3rem, 1.4vw, 0.55rem)",
           alignItems: "center",
+          rowGap: "clamp(0.08rem, 0.4vw, 0.18rem)",
+          columnGap: "clamp(0.3rem, 1.2vw, 0.5rem)",
         }}
       >
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            display: "flex",
+            alignItems: "baseline",
+            gap: "clamp(0.3rem, 1.2vw, 0.55rem)",
+            color: "#e8b84b",
+            fontWeight: 700,
+            letterSpacing: "0.16em",
+            fontSize: "clamp(0.6rem, 2vw, 0.8rem)",
+            marginBottom: "clamp(0.1rem, 0.5vw, 0.2rem)",
+          }}
+        >
+          <span>COURT {court}</span>
+          {phase ? (
+            <span
+              className="hidden sm:inline text-[#f0ece3]"
+              style={{ opacity: 0.65, fontSize: "clamp(0.55rem, 1.7vw, 0.7rem)" }}
+            >
+              {phase}
+            </span>
+          ) : null}
+        </div>
         <TeamLine name={teamA} color={TEAM_A_COLOR} score={scoreA} sets={setsWon.teamA} />
         <TeamLine name={teamB} color={TEAM_B_COLOR} score={scoreB} sets={setsWon.teamB} />
         {showEncounter ? (
           <div
-            className="hidden sm:block text-[#e8b84b] text-right"
+            className="hidden sm:block text-[#e8b84b]"
             style={{
               gridColumn: "1 / -1",
               marginTop: "0.15rem",
-              fontSize: "clamp(0.55rem, 1.6vw, 0.7rem)",
+              fontSize: "clamp(0.5rem, 1.5vw, 0.65rem)",
               letterSpacing: "0.18em",
               opacity: 0.85,
+              textAlign: "left",
             }}
           >
-            ENCOUNTER {encounterA}–{encounterB}
+            ENC {encounterA}–{encounterB}
           </div>
         ) : null}
       </div>
+
+      <img
+        src="/nlr-logo.svg"
+        alt=""
+        aria-hidden
+        className="absolute top-0 right-0 pointer-events-none"
+        style={{
+          padding: "clamp(0.35rem, 1.4vw, 0.6rem) clamp(0.4rem, 1.6vw, 0.7rem)",
+          height: "clamp(1.4rem, 4.5vw, 2.2rem)",
+          width: "auto",
+          opacity: 0.7,
+          filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))",
+        }}
+      />
     </Link>
   );
 }
@@ -136,8 +152,8 @@ function TeamLine({
       <span
         aria-hidden
         style={{
-          width: "clamp(0.2rem, 0.8vw, 0.3rem)",
-          height: "clamp(0.7rem, 2.6vw, 0.95rem)",
+          width: "clamp(0.15rem, 0.7vw, 0.28rem)",
+          height: "clamp(0.6rem, 2.2vw, 0.9rem)",
           background: color,
           borderRadius: "2px",
         }}
@@ -145,11 +161,12 @@ function TeamLine({
       <span
         style={{
           fontWeight: 700,
-          fontSize: "clamp(0.7rem, 2.8vw, 0.95rem)",
+          fontSize: "clamp(0.6rem, 2vw, 0.9rem)",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
           minWidth: 0,
+          maxWidth: "clamp(3rem, 18vw, 9rem)",
         }}
       >
         {name}
@@ -157,10 +174,11 @@ function TeamLine({
       <span
         style={{
           fontWeight: 800,
-          fontSize: "clamp(0.95rem, 4vw, 1.3rem)",
+          fontSize: "clamp(0.95rem, 3.4vw, 1.4rem)",
           lineHeight: 1,
-          minWidth: "clamp(1.1rem, 4vw, 1.5rem)",
+          minWidth: "clamp(1rem, 3.5vw, 1.5rem)",
           textAlign: "right",
+          color: "#f0ece3",
         }}
       >
         {score}
@@ -169,8 +187,8 @@ function TeamLine({
         style={{
           color: "#e8b84b",
           fontWeight: 700,
-          fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
-          minWidth: "clamp(0.7rem, 2.5vw, 0.9rem)",
+          fontSize: "clamp(0.55rem, 1.7vw, 0.8rem)",
+          minWidth: "clamp(0.6rem, 2vw, 0.85rem)",
           textAlign: "right",
         }}
       >
