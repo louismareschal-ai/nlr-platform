@@ -29,6 +29,7 @@ interface BracketWithPanelProps {
   userRole: string | null;
   mySquadId: string | null;
   manageLinkBase?: string;
+  tournamentSlug: string;
 }
 
 export function BracketWithPanel({
@@ -36,6 +37,7 @@ export function BracketWithPanel({
   userRole,
   mySquadId,
   manageLinkBase,
+  tournamentSlug,
 }: BracketWithPanelProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const close = useCallback(() => setSelectedId(null), []);
@@ -51,6 +53,7 @@ export function BracketWithPanel({
         userRole={userRole}
         mySquadId={mySquadId}
         manageLinkBase={manageLinkBase}
+        tournamentSlug={tournamentSlug}
         onClose={close}
       />
     </>

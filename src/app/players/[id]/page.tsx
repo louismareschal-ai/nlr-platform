@@ -87,6 +87,93 @@ export default async function PlayerProfilePage({
         </div>
       );
     }
+
+    // Fallback: player exists in the platform `players` table but has no
+    // PlayerZone-scraped athlete_profile yet. Render a minimal profile with
+    // NLR tournament participations.
+    if (isUUID) {
+      const { data: player, error: playerError } = await supabase
+        .from("players")
+        .select(`
+          id, first_name, last_name, gender, photo_url, playerzone_id, squad_id
+        `)
+        .eq("id", id)
+        .maybeSingle();
+
+      if (playerError) {
+        console.error("Player fallback query error:", playerError);
+      }
+
+      let squad: { id: string; name: string; seed: number | null; tournaments: { id: string; name: string; slug: string; date: string | null } } | null = null;
+      if (player?.squad_id) {
+        const { data: squadRow } = await supabase
+          .from("squads")
+          .select("id, name, seed, tournaments(id, name, slug, date)")
+          .eq("id", player.squad_id)
+          .maybeSingle();
+        squad = squadRow as unknown as typeof squad;
+      }
+
+      if (player) {
+        const tournament = squad?.tournaments;
+
+        return (
+          <div className="space-y-8">
+            <Link href="/players" className="text-sm text-[#6b6b7a] hover:text-[#f0ece3] transition-colors">
+              ← Back to players
+            </Link>
+
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <div className="shrink-0 w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-[#1a1a24] overflow-hidden flex items-center justify-center">
+                {player.photo_url ? (
+                  <img
+                    src={player.photo_url}
+                    alt={`${player.first_name} ${player.last_name}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl text-[#6b6b7a]">
+                    {player.first_name[0]}{player.last_name[0]}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <h1
+                  className="text-4xl font-bold tracking-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {player.first_name} {player.last_name}
+                </h1>
+                <p className="text-sm text-[#6b6b7a] mt-2 capitalize">{player.gender}</p>
+              </div>
+            </div>
+
+            {squad && tournament && (
+              <div>
+                <p className="label-overline mb-3">Current tournament</p>
+                <Link
+                  href={`/tournaments/${tournament.slug}/squads/${squad.id}`}
+                  className="block rounded-xl border border-[#1a1a24] bg-[#0d0d12] hover:border-[#e8b84b]/40 p-4 transition-colors"
+                >
+                  <p className="text-xs text-[#6b6b7a] mb-1">{tournament.name}</p>
+                  <div className="flex items-center gap-2">
+                    {squad.seed && (
+                      <span className="text-xs font-bold text-[#e8b84b]">#{squad.seed}</span>
+                    )}
+                    <p className="font-bold text-lg" style={{ fontFamily: "var(--font-display)" }}>
+                      {squad.name}
+                    </p>
+                    <span className="ml-auto text-xs text-[#6b6b7a]">→</span>
+                  </div>
+                </Link>
+              </div>
+            )}
+          </div>
+        );
+      }
+    }
+
     notFound();
   }
 
